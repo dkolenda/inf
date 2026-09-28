@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#073f63" />
+    <meta
+      name="description"
+      content="Cyber Rafa — edukacyjna gra dla dzieci o phishingu i bezpiecznym korzystaniu z internetu."
+    />
+    <title>Cyber Rafa — misja: phishing</title>
+    <link rel="stylesheet" href="style.css?p=3" />
+  </head>
+  <body>
+    <div class="game-shell">
+      <header class="topbar">
+        <button class="brand" type="button" data-go-home aria-label="Wróć na mapę">
+          <span class="brand__mark" aria-hidden="true">🛡️</span>
+          <span><strong>Cyber Rafa</strong><small>Bezpieczni w sieci</small></span>
+        </button>
+
+        <div class="hud" id="hud" hidden aria-label="Stan gry">
+          <div class="hud__item" title="Życia">
+            <span aria-hidden="true">💗</span>
+            <strong id="livesValue">3</strong>
+            <span class="sr-only">życia</span>
+          </div>
+          <div class="hud__item" title="Punkty">
+            <span aria-hidden="true">⭐</span>
+            <strong id="scoreValue">0</strong>
+            <span class="sr-only">punktów</span>
+          </div>
+        </div>
+
+        <div class="topbar__actions">
+          <button class="icon-button" id="readButton" type="button" aria-label="Przeczytaj ekran na głos" title="Przeczytaj ekran">
+            <span aria-hidden="true">🔊</span>
+          </button>
+          <button class="icon-button" id="musicButton" type="button" aria-pressed="false" aria-label="Włącz muzykę" title="Muzyka jest wyłączona">
+            <span id="musicIcon" aria-hidden="true">♫</span>
+            <span class="status-dot" aria-hidden="true"></span>
+          </button>
+        </div>
+      </header>
+
+      <main id="game" tabindex="-1">
+        <section class="screen screen--ocean screen--intro is-active" id="introScreen" data-screen="intro" aria-labelledby="introTitle">
+          <div class="intro-wrap">
+            <div class="mascot-wrap mascot-wrap--intro">
+              <img src="assets/aksio-przewodnik.png" alt="Uśmiechnięty aksolotl Aksio macha łapką" class="mascot" />
+            </div>
+            <article class="speech-card">
+              <span class="speaker">Aksio</span>
+              <p class="eyebrow">Witaj w podwodnym miasteczku!</p>
+              <h1 id="introTitle">Zostań strażnikiem Cyber Rafy</h1>
+              <p>
+                W sieci czasem pojawiają się wiadomości, które tylko udają prawdziwe. Nauczę Cię, jak je rozpoznać — spokojnie, krok po kroku.
+              </p>
+              <button class="primary-button" id="startButton" type="button">Zanurzam się! <span aria-hidden="true">→</span></button>
+            </article>
+          </div>
+          <p class="intro-note"><span aria-hidden="true">♫</span> Muzyka jest domyślnie wyłączona. Możesz ją włączyć w prawym górnym rogu.</p>
+        </section>
+
+        <section class="screen screen--map" id="mapScreen" data-screen="map" aria-labelledby="mapTitle" hidden>
+          <div class="map-heading">
+            <p class="eyebrow">Podwodne miasteczko</p>
+            <h1 id="mapTitle">Wybierz misję</h1>
+            <p>Każdy mieszkaniec zna inny sposób na bezpieczne surfowanie.</p>
+          </div>
+
+          <div class="map-board" aria-label="Mapa misji Cyber Rafy">
+            <button class="map-pin map-pin--active" id="phishingMission" type="button">
+              <span class="map-pin__pulse" aria-hidden="true"></span>
+              <img src="assets/aksio-przewodnik.png" alt="" />
+              <span class="map-pin__copy"><strong>Aksio</strong><small>Phishing</small></span>
+              <span class="map-pin__badge" aria-hidden="true">!</span>
+            </button>
+
+            <button class="map-pin map-pin--locked map-pin--passwords" type="button" disabled>
+              <span class="animal-token" aria-hidden="true">🐢</span>
+              <span class="map-pin__copy"><strong>Tola</strong><small>Silne hasła · wkrótce</small></span>
+              <span class="lock" aria-hidden="true">🔒</span>
+            </button>
+
+            <button class="map-pin map-pin--locked map-pin--photos" type="button" disabled>
+              <span class="animal-token" aria-hidden="true">🐙</span>
+              <span class="map-pin__copy"><strong>Olek</strong><small>Zdjęcia · wkrótce</small></span>
+              <span class="lock" aria-hidden="true">🔒</span>
+            </button>
+
+            <button class="map-pin map-pin--locked map-pin--chat" type="button" disabled>
+              <span class="animal-token" aria-hidden="true">🐬</span>
+              <span class="map-pin__copy"><strong>Delfina</strong><small>Rozmowy online · wkrótce</small></span>
+              <span class="lock" aria-hidden="true">🔒</span>
+            </button>
+          </div>
+
+          <aside class="map-callout">
+            <span aria-hidden="true">👆</span>
+            <p><strong>Zacznij od Aksia.</strong> Czeka na Ciebie pierwsza misja!</p>
+          </aside>
+        </section>
+
+        <section class="screen screen--lesson" id="lessonScreen" data-screen="lesson" aria-labelledby="lessonTitle" hidden>
+          <div class="lesson-layout">
+            <div class="lesson-mascot">
+              <img src="assets/aksio-przewodnik.png" alt="Aksio, przewodnik po Cyber Rafie" />
+            </div>
+            <article class="lesson-card">
+              <p class="eyebrow">Misja 1 · Phishing</p>
+              <h1 id="lessonTitle">Nie każda wiadomość mówi prawdę</h1>
+              <p>
+                <strong>Phishing</strong> to próba wyłudzenia informacji — na przykład hasła, adresu lub danych rodzica. Oszust podszywa się pod kogoś, komu ufasz.
+              </p>
+              <div class="tip-grid" aria-label="Trzy zasady rozpoznawania phishingu">
+                <div class="tip"><span aria-hidden="true">👀</span><strong>Sprawdź nadawcę</strong><small>Czy adres wygląda znajomo?</small></div>
+                <div class="tip"><span aria-hidden="true">⏳</span><strong>Nie daj się pospieszać</strong><small>Presja to sygnał alarmowy.</small></div>
+                <div class="tip"><span aria-hidden="true">🔗</span><strong>Nie klikaj od razu</strong><small>Najpierw poproś dorosłego.</small></div>
+              </div>
+              <div class="rules-box">
+                <span aria-hidden="true">⭐</span>
+                <p><strong>+20</strong> za dobrą ocenę wiadomości, <strong>+10</strong> za wskazanie wszystkich oznak oszustwa. Błędna ocena zabiera jedno życie.</p>
+              </div>
+              <button class="primary-button" id="beginQuizButton" type="button">Rozpocznij trening <span aria-hidden="true">→</span></button>
+            </article>
+          </div>
+        </section>
+
+        <section class="screen screen--quiz" id="quizScreen" data-screen="quiz" aria-labelledby="quizTitle" hidden>
+          <div class="quiz-wrap">
+            <div class="quiz-progress" aria-label="Postęp misji">
+              <span id="progressText">Wiadomość 1 z 6</span>
+              <div class="progress-track"><span id="progressBar"></span></div>
+            </div>
+
+            <div class="quiz-grid">
+              <article class="mail-card mail-card--postal" id="mailCard" aria-label="Wiadomość do oceny">
+                <div class="mail-subject-row">
+                  <h2 class="mail-subject" id="mailSubject">Problem z doręczeniem przesyłki nr PL784921603</h2>
+                  <span class="mail-label">Odebrane</span>
+                </div>
+                <div class="mail-topline">
+                  <div class="mail-avatar" id="mailAvatar" aria-hidden="true">P</div>
+                  <div class="mail-sender">
+                    <p><span class="mail-from" id="mailFrom">Poczta Polska</span> <span class="mail-address" id="mailAddress">&lt;powiadomienia@poczta-polska-dostawa.info&gt;</span></p>
+                    <p class="mail-recipient">do: <span id="mailRecipient">mnie</span> <span aria-hidden="true">⌄</span></p>
+                  </div>
+                  <span class="mail-time" id="mailTime">dzisiaj, 09:42</span>
+                </div>
+                <div class="mail-content">
+                  <div class="mail-brand" id="mailBrand" aria-hidden="true"></div>
+                  <div id="mailBody"></div>
+                  <div class="mail-action" id="mailAction" hidden>
+                    <span class="mail-cta" id="mailCta"></span>
+                    <small>Przycisk prowadzi do:<br /><strong id="mailLink"></strong></small>
+                  </div>
+                  <div class="mail-signature" id="mailSignature"></div>
+                  <div class="mail-footer" id="mailFooter" hidden></div>
+                </div>
+              </article>
+
+              <aside class="decision-card" id="decisionPanel">
+                <p class="eyebrow" id="questionKicker">Twoja decyzja</p>
+                <h2 id="quizTitle">Czy ta wiadomość jest bezpieczna?</h2>
+                <p class="question-help" id="questionHelp">Przeczytaj uważnie. Nie musisz klikać w link.</p>
+
+                <div class="judge-actions" id="judgeActions">
+                  <button class="choice-button choice-button--safe" type="button" data-judgement="safe">
+                    <span aria-hidden="true">✓</span><strong>Wygląda OK</strong>
+                  </button>
+                  <button class="choice-button choice-button--phish" type="button" data-judgement="phish">
+                    <span aria-hidden="true">!</span><strong>To podejrzane</strong>
+                  </button>
+                </div>
+
+                <form id="clueForm" class="clue-form" hidden>
+                  <fieldset>
+                    <legend>Co wzbudziło Twoją czujność?</legend>
+                    <p>Zaznacz wszystkie pasujące odpowiedzi.</p>
+                    <div id="clueOptions" class="clue-options"></div>
+                  </fieldset>
+                  <button class="primary-button primary-button--wide" type="submit">Sprawdzam</button>
+                </form>
+
+              </aside>
+            </div>
+          </div>
+
+          <div class="feedback-modal" id="feedbackModal" role="dialog" aria-modal="true" aria-labelledby="feedback" hidden>
+            <div class="feedback-modal__panel">
+              <div class="feedback-modal__icon" id="feedbackIcon" aria-hidden="true">✓</div>
+              <div class="feedback" id="feedback" aria-live="polite"></div>
+              <button class="primary-button primary-button--wide" id="nextButton" type="button">Następna wiadomość <span aria-hidden="true">→</span></button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen screen--result" id="resultScreen" data-screen="result" aria-labelledby="resultTitle" hidden>
+          <div class="confetti" id="confetti" aria-hidden="true"></div>
+          <div class="result-card">
+            <div class="result-stars" aria-hidden="true">★ ★ ★</div>
+            <p class="eyebrow">Misja zakończona</p>
+            <h1 id="resultTitle">Cyber Rafa jest bezpieczniejsza!</h1>
+            <img src="assets/aksio-przewodnik.png" alt="Aksio gratuluje ukończenia misji" class="result-mascot" />
+            <p id="resultMessage">Świetna robota!</p>
+            <div class="score-summary">
+              <div><span>Twój wynik</span><strong id="finalScore">0</strong></div>
+              <div><span>Najlepszy wynik</span><strong id="bestScore">0</strong></div>
+            </div>
+            <div class="word-card">
+              <span aria-hidden="true">✦</span>
+              <div><small>Odkryte hasło</small><strong>PHISHING</strong><p>Próba wyłudzenia danych przez fałszywą wiadomość lub stronę.</p></div>
+            </div>
+            <div class="result-actions">
+              <button class="secondary-button" id="backToMapButton" type="button">Wróć na mapę</button>
+              <button class="primary-button" id="playAgainButton" type="button">Zagraj jeszcze raz</button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <script src="game.js?p=4"></script>
+  </body>
+</html>
