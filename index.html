@@ -6,10 +6,10 @@
     <meta name="theme-color" content="#073f63" />
     <meta
       name="description"
-      content="Cyber Rafa — edukacyjna gra dla dzieci o phishingu i bezpiecznym korzystaniu z internetu."
+      content="Cyber Rafa — edukacyjna gra dla dzieci o phishingu, zdjęciach i bezpiecznym korzystaniu z internetu."
     />
-    <title>Cyber Rafa — misja: phishing</title>
-    <link rel="stylesheet" href="style.css?p=3" />
+    <title>Cyber Rafa — bezpieczni w sieci</title>
+    <link rel="stylesheet" href="style.css?p=12" />
   </head>
   <body>
     <div class="game-shell">
@@ -78,19 +78,19 @@
             </button>
 
             <button class="map-pin map-pin--locked map-pin--passwords" type="button" disabled>
-              <span class="animal-token" aria-hidden="true">🐢</span>
+              <img src="assets/tola-przewodniczka.png" alt="" />
               <span class="map-pin__copy"><strong>Tola</strong><small>Silne hasła · wkrótce</small></span>
               <span class="lock" aria-hidden="true">🔒</span>
             </button>
 
-            <button class="map-pin map-pin--locked map-pin--photos" type="button" disabled>
-              <span class="animal-token" aria-hidden="true">🐙</span>
-              <span class="map-pin__copy"><strong>Olek</strong><small>Zdjęcia · wkrótce</small></span>
-              <span class="lock" aria-hidden="true">🔒</span>
+            <button class="map-pin map-pin--active map-pin--photos" id="photosMission" type="button">
+              <img src="assets/olek-przewodnik.png" alt="" />
+              <span class="map-pin__copy"><strong>Olek</strong><small>Bezpieczne zdjęcia</small></span>
+              <span class="map-pin__badge" aria-hidden="true">10</span>
             </button>
 
             <button class="map-pin map-pin--locked map-pin--chat" type="button" disabled>
-              <span class="animal-token" aria-hidden="true">🐬</span>
+              <img src="assets/delfina-przewodniczka.png" alt="" />
               <span class="map-pin__copy"><strong>Delfina</strong><small>Rozmowy online · wkrótce</small></span>
               <span class="lock" aria-hidden="true">🔒</span>
             </button>
@@ -98,7 +98,7 @@
 
           <aside class="map-callout">
             <span aria-hidden="true">👆</span>
-            <p><strong>Zacznij od Aksia.</strong> Czeka na Ciebie pierwsza misja!</p>
+            <p><strong>Wybierz przewodnika.</strong> Aksio uczy o phishingu, a Olek — o zdjęciach.</p>
           </aside>
         </section>
 
@@ -124,6 +124,88 @@
               </div>
               <button class="primary-button" id="beginQuizButton" type="button">Rozpocznij trening <span aria-hidden="true">→</span></button>
             </article>
+          </div>
+        </section>
+
+        <section class="screen screen--lesson screen--photo-lesson" id="photoLessonScreen" data-screen="photo-lesson" aria-labelledby="photoLessonTitle" hidden>
+          <div class="lesson-layout lesson-layout--photos">
+            <div class="photo-mascot" aria-hidden="true">
+              <img src="assets/olek-przewodnik.png" alt="" />
+              <small>Olek</small>
+            </div>
+            <article class="lesson-card lesson-card--photos">
+              <p class="eyebrow">Misja 2 · Zdjęcia</p>
+              <h1 id="photoLessonTitle">Zanim udostępnisz — sprawdź</h1>
+              <p>
+                Zdjęcie może ujawnić <strong>więcej, niż widać na pierwszy rzut oka</strong>. Sprawdź tło, informacje zapisane w pliku oraz osoby, które mają je otrzymać.
+              </p>
+              <div class="photo-rule" aria-label="Zasada bezpiecznego udostępniania">
+                <span><b>1</b><strong>Komu?</strong><small>Czy znam i ufam odbiorcy?</small></span>
+                <span><b>2</b><strong>Co?</strong><small>Co widać i co zapisano w pliku?</small></span>
+                <span><b>3</b><strong>Dlaczego?</strong><small>Czy naprawdę muszę to wysłać?</small></span>
+              </div>
+              <div class="exif-note">
+                <span aria-hidden="true">ⓘ</span>
+                <p><strong>EXIF to metadane zdjęcia.</strong> Oryginalny plik może zawierać datę, model urządzenia, parametry aparatu, a czasem GPS. Nie każda platforma zachowuje wszystkie te dane.</p>
+              </div>
+              <div class="rules-box">
+                <span aria-hidden="true">⭐</span>
+                <p>Przejdź <strong>10 zadań</strong>, w tym 9 prawdziwych przypadków. Otrzymasz <strong>+20</strong> za dobrą decyzję „wyślij / nie wysyłaj” oraz <strong>+10</strong> za jeden poprawny powód.</p>
+              </div>
+              <button class="primary-button" id="beginPhotoButton" type="button">Rozpocznij misję <span aria-hidden="true">→</span></button>
+            </article>
+          </div>
+        </section>
+
+        <section class="screen screen--photo-game" id="photoGameScreen" data-screen="photo-game" aria-labelledby="photoTaskTitle" hidden>
+          <div class="photo-game-wrap">
+            <div class="quiz-progress photo-progress" aria-label="Postęp misji Zdjęcia">
+              <span id="photoProgressText">Zadanie 1 z 10</span>
+              <div class="progress-track"><span id="photoProgressBar"></span></div>
+            </div>
+
+            <div class="photo-game-grid">
+              <article class="photo-stage" id="photoStage" aria-live="polite"></article>
+              <aside class="photo-sidecard" id="photoSidebar">
+                <div class="photo-sidecard__mascot" aria-hidden="true"><img src="assets/olek-przewodnik.png" alt="" /></div>
+                <p class="eyebrow">Zasada Olka</p>
+                <h2>Komu, co i dlaczego?</h2>
+                <p id="photoHint">Obejrzyj całe zdjęcie — także jego tło.</p>
+                <div class="photo-task-dots" id="photoTaskDots" aria-label="Dziesięć zadań misji"></div>
+                <div class="photo-score-note"><span aria-hidden="true">🔎</span><p>Nie śpiesz się. Bezpieczna decyzja jest ważniejsza niż szybka.</p></div>
+              </aside>
+            </div>
+          </div>
+
+          <div class="feedback-modal" id="photoFeedbackModal" role="dialog" aria-modal="true" aria-labelledby="photoFeedback" hidden>
+            <div class="feedback-modal__panel">
+              <div class="feedback-modal__icon" id="photoFeedbackIcon" aria-hidden="true">✓</div>
+              <div class="feedback" id="photoFeedback" aria-live="polite"></div>
+              <button class="primary-button primary-button--wide" id="nextPhotoButton" type="button">Następne zadanie <span aria-hidden="true">→</span></button>
+            </div>
+          </div>
+        </section>
+
+        <section class="screen screen--result screen--photo-result" id="photoResultScreen" data-screen="photo-result" aria-labelledby="photoResultTitle" hidden>
+          <div class="confetti" id="photoConfetti" aria-hidden="true"></div>
+          <div class="result-card">
+            <div class="result-stars" aria-hidden="true">★ ★ ★</div>
+            <p class="eyebrow">Misja zdjęciowa zakończona</p>
+            <h1 id="photoResultTitle">Masz oko do prywatności!</h1>
+            <div class="photo-result-badge" aria-hidden="true"><img src="assets/olek-przewodnik.png" alt="" /><span>✓</span></div>
+            <p id="photoResultMessage">Świetna robota!</p>
+            <div class="score-summary">
+              <div><span>Twój wynik</span><strong id="photoFinalScore">0</strong></div>
+              <div><span>Najlepszy wynik</span><strong id="photoBestScore">0</strong></div>
+            </div>
+            <div class="word-card word-card--photos">
+              <span aria-hidden="true">📷</span>
+              <div><small>Zapamiętaj</small><strong>KOMU · CO · DLACZEGO?</strong><p>Tło + dane w pliku + odbiorcy — sprawdź wszystkie trzy.</p></div>
+            </div>
+            <div class="result-actions">
+              <button class="secondary-button" id="photoBackToMapButton" type="button">Wróć na mapę</button>
+              <button class="primary-button" id="photoPlayAgainButton" type="button">Zagraj jeszcze raz</button>
+            </div>
           </div>
         </section>
 
@@ -223,6 +305,6 @@
       <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
     </div>
 
-    <script src="game.js?p=4"></script>
+    <script src="game.js?p=12"></script>
   </body>
 </html>
