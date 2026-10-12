@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200">
+  <rect width="360" height="200" rx="18" fill="#fff4d6"/>
+  <!-- gorące słońce -->
+  <circle cx="300" cy="44" r="24" fill="#ffc800"/>
+  <path d="M300 8v10M300 70v10M264 44h10M326 44h10M275 19l7 7M318 62l7 7M325 19l-7 7M282 62l-7 7" stroke="#ffc800" stroke-width="4" stroke-linecap="round"/>
+  <!-- pień drzewa -->
+  <path d="M150 200V0h44v200z" fill="#8d6e63"/>
+  <path d="M160 20v40M182 70v50M164 130v40" stroke="#6d4c41" stroke-width="4" stroke-linecap="round"/>
+  <!-- koala przytulony do pnia -->
+  <ellipse cx="150" cy="120" rx="34" ry="40" fill="#9aa5b1"/>
+  <circle cx="132" cy="70" r="28" fill="#9aa5b1"/>
+  <circle cx="110" cy="54" r="15" fill="#9aa5b1"/><circle cx="110" cy="54" r="8" fill="#f2f2f2"/>
+  <circle cx="156" cy="50" r="13" fill="#9aa5b1"/>
+  <ellipse cx="128" cy="80" rx="8" ry="10" fill="#2d3748"/>
+  <circle cx="122" cy="66" r="3.5" fill="#2d3748"/><circle cx="140" cy="64" r="3.5" fill="#2d3748"/>
+  <path d="M162 104q22 4 24 18M160 140q24 2 26 14" stroke="#9aa5b1" stroke-width="14" stroke-linecap="round" fill="none"/>
+  <!-- termometr -->
+  <rect x="48" y="96" width="14" height="70" rx="7" fill="#fff" stroke="#2d3748" stroke-width="2"/>
+  <circle cx="55" cy="170" r="11" fill="#1cb0f6" stroke="#2d3748" stroke-width="2"/>
+  <rect x="51" y="130" width="8" height="40" fill="#1cb0f6"/>
+</svg>

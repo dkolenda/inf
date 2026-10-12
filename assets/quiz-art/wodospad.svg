@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200">
+  <rect width="360" height="200" rx="18" fill="#bfe8ff"/>
+  <circle cx="320" cy="34" r="18" fill="#ffd84d"/>
+  <path d="M30 34q14-12 28 0q14-10 26 2H30z" fill="#fff"/>
+  <!-- płaskowyż ze stromymi ścianami -->
+  <path d="M60 200V52q4-8 12-8h176q8 0 12 8l8 148z" fill="#a1705a"/>
+  <path d="M68 44h184q8 0 10 6H58q2-6 10-6z" fill="#5fa83a"/>
+  <path d="M90 60v140M120 70v130M210 66v134M240 58v142" stroke="#8a5d48" stroke-width="3" opacity=".6"/>
+  <!-- wodospad -->
+  <path d="M158 50h16q4 70 10 150h-34q4-80 8-150z" fill="#e8f7ff"/>
+  <path d="M163 54v140M170 56l4 138" stroke="#9ad7f5" stroke-width="3" stroke-dasharray="12 8">
+    <animate attributeName="stroke-dashoffset" from="0" to="-40" dur="1s" repeatCount="indefinite"/>
+  </path>
+  <ellipse cx="166" cy="196" rx="44" ry="14" fill="#fff" opacity=".9"/>
+  <!-- dżungla -->
+  <g fill="#2e8b3a">
+    <circle cx="20" cy="190" r="26"/><circle cx="56" cy="196" r="22"/><circle cx="110" cy="198" r="20"/>
+    <circle cx="232" cy="198" r="22"/><circle cx="290" cy="190" r="28"/><circle cx="340" cy="194" r="24"/>
+  </g>
+  <!-- mały samolot dla skali -->
+  <g transform="translate(300 96) rotate(-6)">
+    <path d="M-20 0q0-5 6-5h26q8 0 10 5-2 5-10 5h-26q-6 0-6-5z" fill="#ff4b4b"/>
+    <path d="M-4-4l-6-14h8l8 14zM-4 4l-6 12h8l8-12z" fill="#d83232"/>
+    <path d="M-20-2l-6-8h5l6 8z" fill="#d83232"/>
+    <circle cx="10" cy="-1" r="2.5" fill="#bfe8ff"/>
+  </g>
+</svg>

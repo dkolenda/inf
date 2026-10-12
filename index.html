@@ -2,309 +2,242 @@
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#073f63" />
-    <meta
-      name="description"
-      content="Cyber Rafa — edukacyjna gra dla dzieci o phishingu, zdjęciach i bezpiecznym korzystaniu z internetu."
-    />
-    <title>Cyber Rafa — bezpieczni w sieci</title>
-    <link rel="stylesheet" href="style.css?p=12" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="theme-color" content="#58cc02" />
+    <meta name="description" content="Interaktywne zadania z informatyki dla uczniów." />
+    <title>Informatyczna Przygoda</title>
+    <link rel="stylesheet" href="styles.css?v=30" />
   </head>
   <body>
-    <div class="game-shell">
+    <div id="app"></div>
+
+    <template id="home-template">
       <header class="topbar">
-        <button class="brand" type="button" data-go-home aria-label="Wróć na mapę">
-          <span class="brand__mark" aria-hidden="true">🛡️</span>
-          <span><strong>Cyber Rafa</strong><small>Bezpieczni w sieci</small></span>
-        </button>
-
-        <div class="hud" id="hud" hidden aria-label="Stan gry">
-          <div class="hud__item" title="Życia">
-            <span aria-hidden="true">💗</span>
-            <strong id="livesValue">3</strong>
-            <span class="sr-only">życia</span>
-          </div>
-          <div class="hud__item" title="Punkty">
-            <span aria-hidden="true">⭐</span>
-            <strong id="scoreValue">0</strong>
-            <span class="sr-only">punktów</span>
-          </div>
-        </div>
-
-        <div class="topbar__actions">
-          <button class="icon-button" id="readButton" type="button" aria-label="Przeczytaj ekran na głos" title="Przeczytaj ekran">
-            <span aria-hidden="true">🔊</span>
-          </button>
-          <button class="icon-button" id="musicButton" type="button" aria-pressed="false" aria-label="Włącz muzykę" title="Muzyka jest wyłączona">
-            <span id="musicIcon" aria-hidden="true">♫</span>
-            <span class="status-dot" aria-hidden="true"></span>
-          </button>
+        <a class="brand" href="#/" aria-label="Informatyczna Przygoda — strona główna">
+          <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+          <span>Informatyczna<br /><strong>Przygoda</strong></span>
+        </a>
+        <div class="header-progress" role="progressbar" aria-label="Postęp we wszystkich tematach" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+        <div class="stats" aria-label="Twoje postępy">
+          <span class="stat stat-points"><span aria-hidden="true">◆</span><b>0</b><small>punktów</small></span>
+          <button class="avatar" type="button" aria-label="Profil ucznia">MK</button>
         </div>
       </header>
 
-      <main id="game" tabindex="-1">
-        <section class="screen screen--ocean screen--intro is-active" id="introScreen" data-screen="intro" aria-labelledby="introTitle">
-          <div class="intro-wrap">
-            <div class="mascot-wrap mascot-wrap--intro">
-              <img src="assets/aksio-przewodnik.png" alt="Uśmiechnięty aksolotl Aksio macha łapką" class="mascot" />
+      <main class="home-view">
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">Twoja informatyczna przygoda</p>
+            <h1>Wybierz temat<br />i ruszaj po <span>wiedzę!</span></h1>
+            <p class="hero-lead">Krótkie zadania, nowe umiejętności i mnóstwo satysfakcji. Każdy krok przybliża Cię do celu.</p>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <div class="code-card">
+              <div class="code-dots"><i></i><i></i><i></i></div>
+              <div class="code-line w-80"></div>
+              <div class="code-line w-55"></div>
+              <div class="code-line w-70"></div>
+              <div class="code-line w-40"></div>
+              <div class="success-badge">✓</div>
             </div>
-            <article class="speech-card">
-              <span class="speaker">Aksio</span>
-              <p class="eyebrow">Witaj w podwodnym miasteczku!</p>
-              <h1 id="introTitle">Zostań strażnikiem Cyber Rafy</h1>
-              <p>
-                W sieci czasem pojawiają się wiadomości, które tylko udają prawdziwe. Nauczę Cię, jak je rozpoznać — spokojnie, krok po kroku.
-              </p>
-              <button class="primary-button" id="startButton" type="button">Zanurzam się! <span aria-hidden="true">→</span></button>
-            </article>
-          </div>
-          <p class="intro-note"><span aria-hidden="true">♫</span> Muzyka jest domyślnie wyłączona. Możesz ją włączyć w prawym górnym rogu.</p>
-        </section>
-
-        <section class="screen screen--map" id="mapScreen" data-screen="map" aria-labelledby="mapTitle" hidden>
-          <div class="map-heading">
-            <p class="eyebrow">Podwodne miasteczko</p>
-            <h1 id="mapTitle">Wybierz misję</h1>
-            <p>Każdy mieszkaniec zna inny sposób na bezpieczne surfowanie.</p>
-          </div>
-
-          <div class="map-board" aria-label="Mapa misji Cyber Rafy">
-            <button class="map-pin map-pin--active" id="phishingMission" type="button">
-              <span class="map-pin__pulse" aria-hidden="true"></span>
-              <img src="assets/aksio-przewodnik.png" alt="" />
-              <span class="map-pin__copy"><strong>Aksio</strong><small>Phishing</small></span>
-              <span class="map-pin__badge" aria-hidden="true">!</span>
-            </button>
-
-            <button class="map-pin map-pin--locked map-pin--passwords" type="button" disabled>
-              <img src="assets/tola-przewodniczka.png" alt="" />
-              <span class="map-pin__copy"><strong>Tola</strong><small>Silne hasła · wkrótce</small></span>
-              <span class="lock" aria-hidden="true">🔒</span>
-            </button>
-
-            <button class="map-pin map-pin--active map-pin--photos" id="photosMission" type="button">
-              <img src="assets/olek-przewodnik.png" alt="" />
-              <span class="map-pin__copy"><strong>Olek</strong><small>Bezpieczne zdjęcia</small></span>
-              <span class="map-pin__badge" aria-hidden="true">10</span>
-            </button>
-
-            <button class="map-pin map-pin--locked map-pin--chat" type="button" disabled>
-              <img src="assets/delfina-przewodniczka.png" alt="" />
-              <span class="map-pin__copy"><strong>Delfina</strong><small>Rozmowy online · wkrótce</small></span>
-              <span class="lock" aria-hidden="true">🔒</span>
-            </button>
-          </div>
-
-          <aside class="map-callout">
-            <span aria-hidden="true">👆</span>
-            <p><strong>Wybierz przewodnika.</strong> Aksio uczy o phishingu, a Olek — o zdjęciach.</p>
-          </aside>
-        </section>
-
-        <section class="screen screen--lesson" id="lessonScreen" data-screen="lesson" aria-labelledby="lessonTitle" hidden>
-          <div class="lesson-layout">
-            <div class="lesson-mascot">
-              <img src="assets/aksio-przewodnik.png" alt="Aksio, przewodnik po Cyber Rafie" />
-            </div>
-            <article class="lesson-card">
-              <p class="eyebrow">Misja 1 · Phishing</p>
-              <h1 id="lessonTitle">Nie każda wiadomość mówi prawdę</h1>
-              <p>
-                <strong>Phishing</strong> to próba wyłudzenia informacji — na przykład hasła, adresu lub danych rodzica. Oszust podszywa się pod kogoś, komu ufasz.
-              </p>
-              <div class="tip-grid" aria-label="Trzy zasady rozpoznawania phishingu">
-                <div class="tip"><span aria-hidden="true">👀</span><strong>Sprawdź nadawcę</strong><small>Czy adres wygląda znajomo?</small></div>
-                <div class="tip"><span aria-hidden="true">⏳</span><strong>Nie daj się pospieszać</strong><small>Presja to sygnał alarmowy.</small></div>
-                <div class="tip"><span aria-hidden="true">🔗</span><strong>Nie klikaj od razu</strong><small>Najpierw poproś dorosłego.</small></div>
-              </div>
-              <div class="rules-box">
-                <span aria-hidden="true">⭐</span>
-                <p><strong>+20</strong> za dobrą ocenę wiadomości, <strong>+10</strong> za wskazanie wszystkich oznak oszustwa. Błędna ocena zabiera jedno życie.</p>
-              </div>
-              <button class="primary-button" id="beginQuizButton" type="button">Rozpocznij trening <span aria-hidden="true">→</span></button>
-            </article>
+            <span class="float-icon icon-bulb">💡</span>
+            <span class="float-icon icon-star">★</span>
+            <span class="float-icon icon-brackets">{ }</span>
           </div>
         </section>
 
-        <section class="screen screen--lesson screen--photo-lesson" id="photoLessonScreen" data-screen="photo-lesson" aria-labelledby="photoLessonTitle" hidden>
-          <div class="lesson-layout lesson-layout--photos">
-            <div class="photo-mascot" aria-hidden="true">
-              <img src="assets/olek-przewodnik.png" alt="" />
-              <small>Olek</small>
+        <section class="topics" aria-labelledby="topics-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Wybierz swoją ścieżkę</p>
+              <h2 id="topics-title">Czego chcesz się dziś nauczyć?</h2>
             </div>
-            <article class="lesson-card lesson-card--photos">
-              <p class="eyebrow">Misja 2 · Zdjęcia</p>
-              <h1 id="photoLessonTitle">Zanim udostępnisz — sprawdź</h1>
-              <p>
-                Zdjęcie może ujawnić <strong>więcej, niż widać na pierwszy rzut oka</strong>. Sprawdź tło, informacje zapisane w pliku oraz osoby, które mają je otrzymać.
-              </p>
-              <div class="photo-rule" aria-label="Zasada bezpiecznego udostępniania">
-                <span><b>1</b><strong>Komu?</strong><small>Czy znam i ufam odbiorcy?</small></span>
-                <span><b>2</b><strong>Co?</strong><small>Co widać i co zapisano w pliku?</small></span>
-                <span><b>3</b><strong>Dlaczego?</strong><small>Czy naprawdę muszę to wysłać?</small></span>
-              </div>
-              <div class="exif-note">
-                <span aria-hidden="true">ⓘ</span>
-                <p><strong>EXIF to metadane zdjęcia.</strong> Oryginalny plik może zawierać datę, model urządzenia, parametry aparatu, a czasem GPS. Nie każda platforma zachowuje wszystkie te dane.</p>
-              </div>
-              <div class="rules-box">
-                <span aria-hidden="true">⭐</span>
-                <p>Przejdź <strong>10 zadań</strong>, w tym 9 prawdziwych przypadków. Otrzymasz <strong>+20</strong> za dobrą decyzję „wyślij / nie wysyłaj” oraz <strong>+10</strong> za jeden poprawny powód.</p>
-              </div>
-              <button class="primary-button" id="beginPhotoButton" type="button">Rozpocznij misję <span aria-hidden="true">→</span></button>
-            </article>
+            <p>Każdy temat to osobna przygoda. Zacznij od dowolnego miejsca.</p>
           </div>
+          <div class="topic-grid" id="topic-grid"></div>
+          <section class="suggested-games" aria-labelledby="suggested-games-title">
+            <h3 id="suggested-games-title">🎮 Sugerowane gry</h3>
+            <div class="games-grid">
+              <a class="game-card" href="https://ncase.me/trust/" target="_blank" rel="noopener noreferrer">
+                <span aria-hidden="true">🤝</span>
+                <div><strong>The Evolution of Trust</strong><p>Interaktywna opowieść o zaufaniu i współpracy.</p></div>
+              </a>
+              <a class="game-card" href="https://hextris.io/" target="_blank" rel="noopener noreferrer">
+                <span aria-hidden="true">⬡</span>
+                <div><strong>Hextris</strong><p>Szybka łamigłówka inspirowana Tetrisem.</p></div>
+              </a>
+              <a class="game-card" href="https://www.haxball.com/" target="_blank" rel="noopener noreferrer">
+                <span aria-hidden="true">⚽</span>
+                <div><strong>HaxBall</strong><p>Prosta piłka nożna online dla wielu graczy.</p></div>
+              </a>
+              <a class="game-card" href="https://play2048.co/" target="_blank" rel="noopener noreferrer">
+                <span aria-hidden="true">🔢</span>
+                <div><strong>2048</strong><p>Łącz kafelki i dojdź do liczby 2048.</p></div>
+              </a>
+            </div>
+          </section>
         </section>
 
-        <section class="screen screen--photo-game" id="photoGameScreen" data-screen="photo-game" aria-labelledby="photoTaskTitle" hidden>
-          <div class="photo-game-wrap">
-            <div class="quiz-progress photo-progress" aria-label="Postęp misji Zdjęcia">
-              <span id="photoProgressText">Zadanie 1 z 10</span>
-              <div class="progress-track"><span id="photoProgressBar"></span></div>
-            </div>
-
-            <div class="photo-game-grid">
-              <article class="photo-stage" id="photoStage" aria-live="polite"></article>
-              <aside class="photo-sidecard" id="photoSidebar">
-                <div class="photo-sidecard__mascot" aria-hidden="true"><img src="assets/olek-przewodnik.png" alt="" /></div>
-                <p class="eyebrow">Zasada Olka</p>
-                <h2>Komu, co i dlaczego?</h2>
-                <p id="photoHint">Obejrzyj całe zdjęcie — także jego tło.</p>
-                <div class="photo-task-dots" id="photoTaskDots" aria-label="Dziesięć zadań misji"></div>
-                <div class="photo-score-note"><span aria-hidden="true">🔎</span><p>Nie śpiesz się. Bezpieczna decyzja jest ważniejsza niż szybka.</p></div>
-              </aside>
-            </div>
+        <section class="motivation" aria-label="Motywacja do nauki">
+          <div class="motivation-icon" aria-hidden="true">🏆</div>
+          <div>
+            <p class="eyebrow">Małymi krokami do celu</p>
+            <h2>Gotowy na dzisiejsze wyzwanie?</h2>
+            <p>Wykonuj zadania, zdobywaj punkty i obserwuj, jak rosną Twoje umiejętności.</p>
           </div>
-
-          <div class="feedback-modal" id="photoFeedbackModal" role="dialog" aria-modal="true" aria-labelledby="photoFeedback" hidden>
-            <div class="feedback-modal__panel">
-              <div class="feedback-modal__icon" id="photoFeedbackIcon" aria-hidden="true">✓</div>
-              <div class="feedback" id="photoFeedback" aria-live="polite"></div>
-              <button class="primary-button primary-button--wide" id="nextPhotoButton" type="button">Następne zadanie <span aria-hidden="true">→</span></button>
-            </div>
-          </div>
-        </section>
-
-        <section class="screen screen--result screen--photo-result" id="photoResultScreen" data-screen="photo-result" aria-labelledby="photoResultTitle" hidden>
-          <div class="confetti" id="photoConfetti" aria-hidden="true"></div>
-          <div class="result-card">
-            <div class="result-stars" aria-hidden="true">★ ★ ★</div>
-            <p class="eyebrow">Misja zdjęciowa zakończona</p>
-            <h1 id="photoResultTitle">Masz oko do prywatności!</h1>
-            <div class="photo-result-badge" aria-hidden="true"><img src="assets/olek-przewodnik.png" alt="" /><span>✓</span></div>
-            <p id="photoResultMessage">Świetna robota!</p>
-            <div class="score-summary">
-              <div><span>Twój wynik</span><strong id="photoFinalScore">0</strong></div>
-              <div><span>Najlepszy wynik</span><strong id="photoBestScore">0</strong></div>
-            </div>
-            <div class="word-card word-card--photos">
-              <span aria-hidden="true">📷</span>
-              <div><small>Zapamiętaj</small><strong>KOMU · CO · DLACZEGO?</strong><p>Tło + dane w pliku + odbiorcy — sprawdź wszystkie trzy.</p></div>
-            </div>
-            <div class="result-actions">
-              <button class="secondary-button" id="photoBackToMapButton" type="button">Wróć na mapę</button>
-              <button class="primary-button" id="photoPlayAgainButton" type="button">Zagraj jeszcze raz</button>
-            </div>
-          </div>
-        </section>
-
-        <section class="screen screen--quiz" id="quizScreen" data-screen="quiz" aria-labelledby="quizTitle" hidden>
-          <div class="quiz-wrap">
-            <div class="quiz-progress" aria-label="Postęp misji">
-              <span id="progressText">Wiadomość 1 z 6</span>
-              <div class="progress-track"><span id="progressBar"></span></div>
-            </div>
-
-            <div class="quiz-grid">
-              <article class="mail-card mail-card--postal" id="mailCard" aria-label="Wiadomość do oceny">
-                <div class="mail-subject-row">
-                  <h2 class="mail-subject" id="mailSubject">Problem z doręczeniem przesyłki nr PL784921603</h2>
-                  <span class="mail-label">Odebrane</span>
-                </div>
-                <div class="mail-topline">
-                  <div class="mail-avatar" id="mailAvatar" aria-hidden="true">P</div>
-                  <div class="mail-sender">
-                    <p><span class="mail-from" id="mailFrom">Poczta Polska</span> <span class="mail-address" id="mailAddress">&lt;powiadomienia@poczta-polska-dostawa.info&gt;</span></p>
-                    <p class="mail-recipient">do: <span id="mailRecipient">mnie</span> <span aria-hidden="true">⌄</span></p>
-                  </div>
-                  <span class="mail-time" id="mailTime">dzisiaj, 09:42</span>
-                </div>
-                <div class="mail-content">
-                  <div class="mail-brand" id="mailBrand" aria-hidden="true"></div>
-                  <div id="mailBody"></div>
-                  <div class="mail-action" id="mailAction" hidden>
-                    <span class="mail-cta" id="mailCta"></span>
-                    <small>Przycisk prowadzi do:<br /><strong id="mailLink"></strong></small>
-                  </div>
-                  <div class="mail-signature" id="mailSignature"></div>
-                  <div class="mail-footer" id="mailFooter" hidden></div>
-                </div>
-              </article>
-
-              <aside class="decision-card" id="decisionPanel">
-                <p class="eyebrow" id="questionKicker">Twoja decyzja</p>
-                <h2 id="quizTitle">Czy ta wiadomość jest bezpieczna?</h2>
-                <p class="question-help" id="questionHelp">Przeczytaj uważnie. Nie musisz klikać w link.</p>
-
-                <div class="judge-actions" id="judgeActions">
-                  <button class="choice-button choice-button--safe" type="button" data-judgement="safe">
-                    <span aria-hidden="true">✓</span><strong>Wygląda OK</strong>
-                  </button>
-                  <button class="choice-button choice-button--phish" type="button" data-judgement="phish">
-                    <span aria-hidden="true">!</span><strong>To podejrzane</strong>
-                  </button>
-                </div>
-
-                <form id="clueForm" class="clue-form" hidden>
-                  <fieldset>
-                    <legend>Co wzbudziło Twoją czujność?</legend>
-                    <p>Zaznacz wszystkie pasujące odpowiedzi.</p>
-                    <div id="clueOptions" class="clue-options"></div>
-                  </fieldset>
-                  <button class="primary-button primary-button--wide" type="submit">Sprawdzam</button>
-                </form>
-
-              </aside>
-            </div>
-          </div>
-
-          <div class="feedback-modal" id="feedbackModal" role="dialog" aria-modal="true" aria-labelledby="feedback" hidden>
-            <div class="feedback-modal__panel">
-              <div class="feedback-modal__icon" id="feedbackIcon" aria-hidden="true">✓</div>
-              <div class="feedback" id="feedback" aria-live="polite"></div>
-              <button class="primary-button primary-button--wide" id="nextButton" type="button">Następna wiadomość <span aria-hidden="true">→</span></button>
-            </div>
-          </div>
-        </section>
-
-        <section class="screen screen--result" id="resultScreen" data-screen="result" aria-labelledby="resultTitle" hidden>
-          <div class="confetti" id="confetti" aria-hidden="true"></div>
-          <div class="result-card">
-            <div class="result-stars" aria-hidden="true">★ ★ ★</div>
-            <p class="eyebrow">Misja zakończona</p>
-            <h1 id="resultTitle">Cyber Rafa jest bezpieczniejsza!</h1>
-            <img src="assets/aksio-przewodnik.png" alt="Aksio gratuluje ukończenia misji" class="result-mascot" />
-            <p id="resultMessage">Świetna robota!</p>
-            <div class="score-summary">
-              <div><span>Twój wynik</span><strong id="finalScore">0</strong></div>
-              <div><span>Najlepszy wynik</span><strong id="bestScore">0</strong></div>
-            </div>
-            <div class="word-card">
-              <span aria-hidden="true">✦</span>
-              <div><small>Odkryte hasło</small><strong>PHISHING</strong><p>Próba wyłudzenia danych przez fałszywą wiadomość lub stronę.</p></div>
-            </div>
-            <div class="result-actions">
-              <button class="secondary-button" id="backToMapButton" type="button">Wróć na mapę</button>
-              <button class="primary-button" id="playAgainButton" type="button">Zagraj jeszcze raz</button>
-            </div>
-          </div>
+          <a class="secondary-button" href="#/sciezka/praca-na-komputerze">Wybierz zadanie</a>
         </section>
       </main>
 
-      <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
-    </div>
+      <footer>
+        <span>Informatyczna Przygoda</span>
+        <span>Nauka przez działanie 🚀</span>
+      </footer>
+    </template>
 
-    <script src="game.js?p=12"></script>
+    <template id="path-template">
+      <header class="topbar path-topbar">
+        <a class="brand" href="#/" aria-label="Wróć na stronę główną">
+          <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+          <span>Informatyczna<br /><strong>Przygoda</strong></span>
+        </a>
+        <div class="header-progress" role="progressbar" aria-label="Postęp we wszystkich tematach" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+        <div class="stats" aria-label="Twoje postępy">
+          <span class="stat stat-points"><span aria-hidden="true">◆</span><b>0</b><small>punktów</small></span>
+          <button class="avatar" type="button" aria-label="Profil ucznia">MK</button>
+        </div>
+      </header>
+
+      <main class="path-layout">
+        <aside class="path-sidebar">
+          <a class="back-link" href="#/"><span aria-hidden="true">←</span> Wszystkie tematy</a>
+          <div class="side-card">
+            <span class="side-icon" id="side-icon" aria-hidden="true"></span>
+            <p class="eyebrow">Twoja ścieżka</p>
+            <h1 id="path-title"></h1>
+            <p id="path-description"></p>
+            <div class="progress-label"><span>Postęp</span><strong>2 z 7</strong></div>
+            <div class="progress-track"><span style="width: 29%"></span></div>
+          </div>
+          <div class="tip-card">
+            <span aria-hidden="true">💡</span>
+            <div><strong>Wskazówka</strong><p>Wykonuj zadania po kolei, aby odblokować następne etapy.</p></div>
+          </div>
+        </aside>
+
+        <section class="learning-path" aria-labelledby="unit-title">
+          <div class="unit-banner">
+            <div>
+              <span>ROZDZIAŁ 1</span>
+              <h2 id="unit-title">Pierwsze kroki</h2>
+              <p>Poznaj podstawy i zdobądź pierwsze punkty.</p>
+            </div>
+            <div class="unit-progress"><strong>29%</strong><span>ukończono</span></div>
+          </div>
+
+          <div class="trail" id="trail" aria-label="Lista zadań"></div>
+
+          <div class="coming-soon">
+            <span aria-hidden="true">🎯</span>
+            <div><strong>Meta ścieżki</strong><p>Ukończ wszystkie 7 zadań i zdobądź mistrzowski wynik.</p></div>
+          </div>
+        </section>
+      </main>
+    </template>
+
+    <template id="quiz-template">
+      <div class="quiz-view">
+        <header class="quiz-topbar">
+          <a class="quiz-close" id="quiz-close" href="#/" aria-label="Zakończ quiz i wróć do ścieżki">×</a>
+          <div class="quiz-progress" role="progressbar" aria-label="Postęp quizu" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+          <span class="stat stat-points"><span aria-hidden="true">◆</span><b>0</b><small>punktów</small></span>
+        </header>
+
+        <main class="quiz-main">
+          <p class="eyebrow" id="quiz-kicker"></p>
+          <h1 id="quiz-prompt"></h1>
+          <p class="quiz-hint" id="quiz-hint"></p>
+          <details class="quiz-tip" id="quiz-tip" hidden>
+            <summary></summary>
+            <ol class="quiz-tip-steps"></ol>
+          </details>
+          <figure class="quiz-art" id="quiz-art" hidden></figure>
+          <div class="quiz-body" id="quiz-body"></div>
+        </main>
+
+        <div class="quiz-footer" id="quiz-footer">
+          <div class="quiz-footer-inner">
+            <div class="quiz-feedback" id="quiz-feedback" aria-live="polite"></div>
+            <button class="primary-button quiz-check" id="quiz-check" type="button" disabled>Sprawdź</button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <dialog class="welcome-dialog" id="welcome-dialog" aria-labelledby="welcome-title">
+      <form class="welcome-card" id="welcome-form" method="dialog">
+        <div class="welcome-icon" aria-hidden="true">&lt;/&gt;</div>
+        <p class="eyebrow">Zanim zaczniemy</p>
+        <h2 id="welcome-title">Jak masz na imię?</h2>
+        <p>Podaj swoje imię, a dopasujemy Informatyczną Przygodę do Ciebie.</p>
+        <label for="student-name">Twoje imię</label>
+        <input id="student-name" name="student-name" type="text" autocomplete="name" minlength="2" maxlength="24" placeholder="Np. Ola" required />
+        <p class="welcome-error" id="welcome-error" role="alert" aria-live="polite"></p>
+        <button class="primary-button welcome-submit" type="submit">Zaczynamy <span aria-hidden="true">→</span></button>
+      </form>
+    </dialog>
+
+    <dialog class="lesson-dialog" id="lesson-dialog">
+      <button class="dialog-close" type="button" aria-label="Zamknij">×</button>
+      <div class="dialog-icon" id="dialog-icon">✓</div>
+      <p class="eyebrow" id="dialog-kicker">Zadanie</p>
+      <h2 id="dialog-title">Zadanie 1</h2>
+      <p id="dialog-copy">Treść tego zadania dodamy później.</p>
+      <button class="primary-button dialog-action" type="button">Rozumiem</button>
+    </dialog>
+
+    <dialog class="reward-dialog" id="reward-dialog" aria-labelledby="reward-title">
+      <div class="reward-card">
+        <div class="reward-stage" aria-hidden="true">
+          <span class="reward-spark s1">★</span>
+          <span class="reward-spark s2">✦</span>
+          <span class="reward-spark s3">●</span>
+          <!-- TODO: podmień na grafikę postaci, np. <img class="reward-character" src="assets/maskotka-nagroda.png" alt="" /> -->
+          <div class="reward-character reward-character-placeholder"></div>
+          <span class="reward-floor"></span>
+        </div>
+        <h2 id="reward-title">Świetnie!</h2>
+        <p id="reward-copy">Wszystkie odpowiedzi poprawne.</p>
+        <div class="reward-stats">
+          <div class="reward-stat reward-stat-points">
+            <span class="reward-stat-label">Punkty</span>
+            <span class="reward-stat-value"><span aria-hidden="true">⚡</span> +<b id="reward-points">0</b></span>
+          </div>
+          <div class="reward-stat reward-stat-correct">
+            <span class="reward-stat-label">Poprawne</span>
+            <span class="reward-stat-value"><span aria-hidden="true">✓</span> <b id="reward-correct">0</b></span>
+          </div>
+          <div class="reward-stat reward-stat-accuracy">
+            <span class="reward-stat-label">Celność</span>
+            <span class="reward-stat-value"><span aria-hidden="true">◎</span> <b id="reward-accuracy">0</b>%</span>
+          </div>
+        </div>
+        <button class="primary-button reward-action" id="reward-action" type="button">Dalej <span aria-hidden="true">→</span></button>
+      </div>
+      <canvas class="confetti-canvas" id="confetti-canvas" aria-hidden="true"></canvas>
+    </dialog>
+
+    <script src="quizzes.js?v=34"></script>
+    <script src="file-game.js?v=5"></script>
+    <script src="balloon-game.js?v=1"></script>
+    <script src="network-game.js?v=7"></script>
+    <script src="fake-news-game.js?v=1"></script>
+    <script src="typing-game.js?v=3"></script>
+    <script src="teacher-code.js?v=1"></script>
+    <script src="computer-task.js?v=4"></script>
+    <script src="app.js?v=26"></script>
   </body>
 </html>

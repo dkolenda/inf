@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200">
+  <rect width="360" height="200" rx="18" fill="#e3f6ff"/>
+  <!-- osiedle -->
+  <path d="M20 170V70h70v100zM260 170V50h80v120z" fill="#c4ccd6"/>
+  <path d="M34 84h14v14H34zM62 84h14v14H62zM34 112h14v14H34zM62 112h14v14H62zM274 64h16v16h-16zM310 64h16v16h-16zM274 96h16v16h-16zM310 96h16v16h-16z" fill="#fff"/>
+  <path d="M0 170h360v30H0z" fill="#8bc34a"/>
+  <!-- wejście do schronu -->
+  <path d="M120 170v-44a60 30 0 0 1 120 0v44z" fill="#8c9aa8"/>
+  <path d="M152 170v-36h56v36z" fill="#4a5568"/>
+  <!-- znak obrony cywilnej: niebieski trójkąt w pomarańczowym kwadracie -->
+  <rect x="150" y="30" width="60" height="60" rx="6" fill="#ff9600"/>
+  <path d="M180 40l24 42h-48z" fill="#1c5fd6"/>
+  <path d="M180 90v38" stroke="#5d4037" stroke-width="4"/>
+  <!-- szkoła i trasa -->
+  <path d="M40 170c40-14 70-10 112-4" stroke="#ff4b4b" stroke-width="4" stroke-dasharray="8 6" fill="none"/>
+</svg>

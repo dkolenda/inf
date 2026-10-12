@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 200">
+  <rect width="360" height="200" rx="18" fill="#d9f1ff"/>
+  <!-- góry -->
+  <path d="M0 150L70 70l40 40 70-90 60 64 40-40 80 106z" fill="#8c9aa8"/>
+  <path d="M180 20l-22 30 11-4 11 10 11-10 12 6z" fill="#fff"/>
+  <path d="M70 70l-16 18 10-2 6 6 8-8 8 4zM280 44l-14 14h8l6 6 8-6 8 2z" fill="#fff"/>
+  <!-- flaga na najwyższym szczycie -->
+  <path d="M180 20V2" stroke="#5d4037" stroke-width="3"/>
+  <path d="M181 2h16v6h-16z" fill="#fff"/><path d="M181 8h16v6h-16z" fill="#ff4b4b"/>
+  <!-- zbocze z lasem -->
+  <path d="M0 150q90-30 180-8t180 8v50H0z" fill="#3d8c40"/>
+  <path d="M24 160l10-26 10 26zM44 156l10-28 10 28zM300 158l10-26 10 26zM322 162l10-24 10 24z" fill="#2a6b2e"/>
+  <!-- jezioro -->
+  <ellipse cx="180" cy="176" rx="96" ry="18" fill="#1cb0f6"/>
+  <path d="M130 174h30M196 180h40M160 184h24" stroke="#bfeaff" stroke-width="3" stroke-linecap="round"/>
+  <!-- strzałka: od jeziora do szczytu -->
+  <path d="M262 166V24" stroke="#ff9600" stroke-width="4" stroke-dasharray="8 6"/>
+  <path d="M254 32l8-14 8 14zM254 160l8 14 8-14z" fill="#ff9600"/>
+  <path d="M182 20h80M276 176h-14" stroke="#ff9600" stroke-width="2" stroke-dasharray="4 4"/>
+  <circle cx="262" cy="96" r="17" fill="#ff9600"/>
+  <text x="262" y="104" text-anchor="middle" font-family="Nunito, Arial, sans-serif" font-size="23" font-weight="900" fill="#fff">?</text>
+</svg>
