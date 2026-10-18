@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024" role="img" aria-label="Kowboj - arkusz części postaci">
+  <style>
+    .outline { stroke: #302a35; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+    .detail { fill: none; stroke: #302a35; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+    .fine { fill: none; stroke: #302a35; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+    .soft { stroke: #302a35; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+  </style>
+  <g id="head" transform="translate(0 0)">
+    <path d="M143 281 C127 228 153 184 191 164 C207 144 231 134 256 134 C284 134 308 144 324 164 C362 184 386 230 369 281 L365 377 C343 416 307 438 256 442 C205 438 169 416 147 377 Z" fill="#6f432b" class="outline"/>
+    <ellipse cx="129" cy="309" rx="20" ry="32" fill="#f2b78e" class="outline"/>
+    <ellipse cx="383" cy="309" rx="20" ry="32" fill="#f2b78e" class="outline"/>
+    <circle cx="256" cy="302" r="126" fill="#f2b78e" class="outline"/>
+    <path d="M158 244 Q181 203 207 187 Q190 231 193 267" fill="#6f432b" class="outline"/>
+    <path d="M354 244 Q331 203 305 187 Q322 231 319 267" fill="#6f432b" class="outline"/>
+    <path d="M202 293 Q218 283 234 293" class="fine"/>
+    <path d="M278 293 Q294 283 310 293" class="fine"/>
+    <circle cx="220" cy="300" r="7" fill="#302a35"/>
+    <circle cx="292" cy="300" r="7" fill="#302a35"/>
+    <path d="M256 306 Q247 330 259 334" class="fine"/>
+    <path d="M211 354 Q256 389 301 354 Q292 407 256 410 Q220 407 211 354 Z" fill="#fffaf3" class="outline"/>
+    <path d="M229 372 Q256 383 283 372" class="fine"/>
+    <path d="M82 152 Q98 128 157 124 L171 55 Q174 42 188 40 L324 40 Q338 42 341 55 L355 124 Q414 128 430 152 Q433 169 409 174 Q256 196 103 174 Q79 169 82 152 Z" fill="#9a5e2f" class="outline"/>
+    <path d="M159 119 Q256 137 353 119 L357 148 Q256 166 155 148 Z" fill="#5d3825" class="outline"/>
+    <path d="M178 63 Q256 78 334 63" class="fine" opacity=".65"/>
+    <path d="M102 154 Q256 179 410 154" class="fine" opacity=".65"/>
+  </g>
+  <g id="torso" transform="translate(512 0)">
+    <defs><clipPath id="cowboy-shirt"><path d="M256 96 C222 96 188 105 164 132 L184 377 Q185 406 213 420 L299 420 Q327 406 328 377 L348 132 C324 105 290 96 256 96 Z"/></clipPath></defs>
+    <path d="M256 96 C222 96 188 105 164 132 L184 377 Q185 406 213 420 L299 420 Q327 406 328 377 L348 132 C324 105 290 96 256 96 Z" fill="#d85845" class="outline"/>
+    <g clip-path="url(#cowboy-shirt)" opacity=".7">
+      <path d="M175 145 H339 M173 193 H339 M177 241 H335 M179 289 H333 M181 337 H331" stroke="#f6d7b0" stroke-width="9"/>
+      <path d="M202 94 V416 M256 94 V420 M310 94 V416" stroke="#f6d7b0" stroke-width="9"/>
+      <path d="M175 169 H339 M175 265 H335 M180 361 H332 M229 94 V420 M283 94 V420" stroke="#8e382f" stroke-width="5"/>
+    </g>
+    <path d="M230 98 Q256 124 282 98 L300 127 L281 159 L231 159 L212 127 Z" fill="#f2b78e" class="outline"/>
+    <path d="M207 111 Q256 126 305 111 L326 138 L283 164 L256 208 L229 164 L186 138 Z" fill="#c33f36" class="outline"/>
+    <circle cx="256" cy="156" r="10" fill="#ffd36a" class="soft"/>
+    <path d="M166 130 Q201 112 230 124 L249 176 L226 366 L179 381 Z" fill="#75472c" class="outline"/>
+    <path d="M346 130 Q311 112 282 124 L263 176 L286 366 L333 381 Z" fill="#75472c" class="outline"/>
+    <path d="M204 206 H231 L226 258 H191 Z" fill="#9a6037" class="outline"/>
+    <path d="M308 206 H281 L286 258 H321 Z" fill="#9a6037" class="outline"/>
+    <path d="M179 366 Q256 383 333 366 L334 421 Q256 438 178 421 Z" fill="#56382b" class="outline"/>
+    <rect x="220" y="376" width="72" height="54" rx="12" fill="#e4a831" class="outline"/>
+    <rect x="237" y="388" width="38" height="30" rx="6" fill="#75472c" class="soft"/>
+  </g>
+  <g id="upper-arm" transform="translate(1024 0)">
+    <defs><clipPath id="cowboy-arm"><rect x="221" y="123" width="70" height="266" rx="35"/></clipPath></defs>
+    <rect x="221" y="123" width="70" height="266" rx="35" fill="#d85845" class="outline"/>
+    <g clip-path="url(#cowboy-arm)" opacity=".75">
+      <path d="M220 177 H292 M220 231 H292 M220 285 H292 M220 339 H292" stroke="#f6d7b0" stroke-width="8"/>
+      <path d="M243 120 V390 M276 120 V390" stroke="#f6d7b0" stroke-width="8"/>
+      <path d="M220 204 H292 M220 312 H292 M259 120 V390" stroke="#8e382f" stroke-width="5"/>
+    </g>
+    <path d="M221 327 Q256 338 291 327 L290 360 Q256 371 222 360 Z" fill="#f6d7b0" class="outline"/>
+  </g>
+  <g id="forearm-hand" transform="translate(0 512)">
+    <rect x="222" y="134" width="68" height="228" rx="34" fill="#d85845" class="outline"/>
+    <path d="M222 283 Q256 294 290 283 L290 324 Q256 337 222 324 Z" fill="#f6d7b0" class="outline"/>
+    <circle cx="256" cy="345" r="32" fill="#f2b78e" class="outline"/>
+    <path d="M225 347 Q222 371 231 400 Q239 423 256 426 Q273 423 281 400 Q290 371 287 347 Q274 334 256 334 Q238 334 225 347 Z" fill="#f2b78e" class="outline"/>
+    <path d="M241 382 Q256 391 271 382" class="fine" opacity=".45"/>
+  </g>
+  <g id="thigh" transform="translate(512 512)">
+    <rect x="213" y="108" width="86" height="296" rx="43" fill="#3973aa" class="outline"/>
+    <path d="M256 111 V400" stroke="#27547e" stroke-width="7" stroke-dasharray="15 12"/>
+    <path d="M218 177 Q256 195 294 177" class="fine" opacity=".65"/>
+    <path d="M220 340 Q256 354 292 340" class="fine" opacity=".55"/>
+  </g>
+  <g id="shin-boot" transform="translate(1024 512)">
+    <rect x="219" y="103" width="74" height="298" rx="37" fill="#3973aa" class="outline"/>
+    <path d="M256 107 V333" stroke="#27547e" stroke-width="7" stroke-dasharray="15 12"/>
+    <path d="M209 304 Q256 322 303 304 L306 415 Q256 432 206 415 Z" fill="#81502e" class="outline"/>
+    <path d="M193 405 Q256 389 319 405 L326 446 Q317 466 292 468 L220 468 Q195 466 186 446 Z" fill="#9a5e32" class="outline"/>
+    <path d="M189 446 Q256 460 323 446 L320 467 Q256 480 192 467 Z" fill="#4d3428" class="outline"/>
+    <path d="M221 318 Q256 337 291 318" class="fine"/>
+    <path d="M215 386 H297" class="fine"/>
+    <path d="M239 337 L256 354 L273 337 L273 376 L256 392 L239 376 Z" fill="#d6a23d" class="soft"/>
+  </g>
+</svg>

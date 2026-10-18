@@ -8,12 +8,12 @@ const topics = [
     accent: '#58cc02',
     dark: '#46a302',
     soft: '#e9fbdc',
-    quizzes: { 0: fileSortGame, 1: computerBasicsQuiz, 2: desktopFolderTask, 3: balloonPopGame, 4: networkBuildGame },
+    quizzes: { 0: balloonPopGame, 1: computerBasicsQuiz, 2: fileSortGame, 3: desktopFolderTask, 4: networkBuildGame },
     lessons: [
-      'Gra: Format pliku',
-      'Quiz: Poznajemy komputer',
-      'Folder i tło pulpitu',
       'Gra: Baloniki',
+      'Quiz: Poznajemy komputer',
+      'Gra: Format pliku',
+      'Folder i tło pulpitu',
       'Gra: Sieć komputerowa',
       'Komputerowy finał'
     ]
@@ -47,8 +47,9 @@ const topics = [
     accent: '#9069cd',
     dark: '#744eb3',
     soft: '#f1eafd',
-    quizzes: { 0: typingDefenseGame, 1: idolCardTask },
+    quizzes: { 0: keyboardShortcutsQuiz, 1: typingDefenseGame, 2: idolCardTask },
     lessons: [
+      'Quiz: Klawiatura i skróty',
       'Gra: Obrona zamku',
       'Mój idol — karta w dokumencie',
       'Czcionki i akapity',
@@ -533,6 +534,11 @@ function renderQuiz(slug, index) {
     return;
   }
 
+  if (quiz.type === 'coloring') {
+    renderColoringGame(topic, index, quiz);
+    return;
+  }
+
   if (quiz.type === 'task') {
     renderComputerTask(topic, index, quiz);
     return;
@@ -559,6 +565,10 @@ function renderQuiz(slug, index) {
   body.addEventListener('dragover', handleQuizDragOver);
   body.addEventListener('dragleave', handleQuizDragLeave);
   body.addEventListener('drop', handleQuizDrop);
+  body.addEventListener('input', handleQuizInput);
+  body.addEventListener('beforeinput', handlePracticeBeforeInput);
+  body.addEventListener('cut', handlePracticeClipboard);
+  body.addEventListener('paste', handlePracticeClipboard);
   app.querySelector('#quiz-check').addEventListener('click', handleQuizCheck);
 
   renderQuizStep();
@@ -586,8 +596,19 @@ function renderQuizStep() {
     selected: null,
     checked: false,
     order: question.shuffle === false ? items : shuffle(items),
-    bucketOrder: question.match ? shuffle(question.buckets) : question.buckets
+    bucketOrder: question.match && question.buckets ? shuffle(question.buckets) : question.buckets
   });
+  if (question.type === 'inputs') {
+    question.items.forEach((item, itemIndex) => {
+      if (item.value) quizState.answers.set(itemIndex, item.value);
+    });
+  }
+  if (question.type === 'practice') {
+    quizState.fields = question.items.map((item, itemIndex) => {
+      quizState.answers.set(itemIndex, false);
+      return { left: item.left, right: '' };
+    });
+  }
 
   setQuizProgress(step / quiz.questions.length);
   app.querySelector('#quiz-kicker').textContent = `Część ${question.label} · ${step + 1} z ${quiz.questions.length}`;
@@ -680,11 +701,18 @@ function renderQuizBody() {
   const question = currentQuestion();
 
   if (question.type === 'choices') renderChoices(question, body);
+  else if (question.type === 'keyboard') renderKeyboard(question, body);
+  else if (question.type === 'inputs') renderInputs(question, body);
+  else if (question.type === 'practice') renderPractice(question, body);
   else renderBuckets(question, body);
 
   app.querySelector('.quiz-view').classList.toggle('has-selection', quizState.selected !== null);
-  app.querySelector('#quiz-check').disabled = !quizState.checked && quizState.answers.size < question.items.length;
+  updateQuizCheck();
   if (focusKey) body.querySelector(`[data-key="${focusKey}"]`)?.focus();
+}
+
+function updateQuizCheck() {
+  app.querySelector('#quiz-check').disabled = !quizState.checked && quizState.answers.size < currentQuestion().items.length;
 }
 
 function createChip(question, itemIndex) {
@@ -710,7 +738,7 @@ function createChip(question, itemIndex) {
     chip.classList.add(isCorrect ? 'correct' : 'wrong');
     chip.disabled = true;
 
-    if (!isCorrect) {
+    if (!isCorrect && question.type !== 'keyboard') {
       const fix = document.createElement('small');
       const answerBucket = question.buckets.find((bucket) => bucket.id === item.answer);
       fix.textContent = question.match ? 'to nie ta definicja' : `→ ${answerBucket.label}`;
@@ -723,10 +751,8 @@ function createChip(question, itemIndex) {
   return chip;
 }
 
-function renderBuckets(question, body) {
-  const { answers, order, bucketOrder, checked } = quizState;
-  body.className = `quiz-body bucket-quiz${question.match ? ' is-match' : ''}`;
-
+function renderChipPool(question) {
+  const { answers, order, checked } = quizState;
   const pool = document.createElement('div');
   pool.className = 'chip-pool';
   pool.dataset.drop = '';
@@ -739,6 +765,13 @@ function renderBuckets(question, body) {
     done.textContent = checked ? 'Sprawdzone!' : 'Wszystko na miejscu — kliknij „Sprawdź”.';
     pool.append(done);
   }
+  return pool;
+}
+
+function renderBuckets(question, body) {
+  const { answers, order, bucketOrder, checked } = quizState;
+  body.className = `quiz-body bucket-quiz${question.match ? ' is-match' : ''}`;
+  const pool = renderChipPool(question);
 
   const buckets = document.createElement('div');
   buckets.className = 'buckets';
@@ -783,6 +816,192 @@ function renderBuckets(question, body) {
   });
 
   body.replaceChildren(pool, buckets);
+}
+
+// Klawiatura z pustymi miejscami: każde miejsce (slot) to grupa na jeden klawisz.
+function renderKeyboard(question, body) {
+  const { answers, order, checked } = quizState;
+  body.className = 'quiz-body bucket-quiz keyboard-quiz';
+
+  const board = document.createElement('div');
+  board.className = 'kb';
+  board.setAttribute('aria-label', 'Klawiatura z pustymi miejscami na klawisze');
+
+  question.keyboard.forEach((row) => {
+    const line = document.createElement('div');
+    line.className = 'kb-row';
+    row.forEach((key) => {
+      const { label = '', w = 1, slot, gap } = typeof key === 'string' ? { label: key } : key;
+      const cell = document.createElement('div');
+      cell.className = `kb-key${gap ? ' is-gap' : ''}${!slot && !label ? ' is-blank' : ''}`;
+      cell.style.setProperty('--w', w);
+      line.append(cell);
+      if (!slot) {
+        cell.textContent = label;
+        cell.setAttribute('aria-hidden', 'true');
+        return;
+      }
+
+      cell.classList.add('bucket', 'kb-slot');
+      cell.dataset.bucket = slot;
+      cell.dataset.drop = slot;
+      const placed = order.find((itemIndex) => answers.get(itemIndex) === slot);
+      if (placed === undefined) {
+        const target = document.createElement('button');
+        target.type = 'button';
+        target.className = 'kb-slot-target';
+        target.dataset.key = `bucket-${slot}`;
+        target.disabled = checked;
+        target.setAttribute('aria-label', 'Puste miejsce na klawisz');
+        target.textContent = '?';
+        cell.append(target);
+      } else {
+        cell.append(createChip(question, placed));
+      }
+
+      if (checked) {
+        const answerItem = question.items.find((item) => item.answer === slot);
+        if (answers.get(question.items.indexOf(answerItem)) !== slot) {
+          const fix = document.createElement('small');
+          fix.className = 'kb-fix';
+          fix.textContent = answerItem.text;
+          cell.append(fix);
+        }
+      }
+    });
+    board.append(line);
+  });
+
+  body.replaceChildren(renderChipPool(question), board);
+}
+
+// Pola do wpisania tekstu; odpowiedź to wpisany tekst bez spacji na brzegach.
+function renderInputs(question, body) {
+  const { answers, order, checked } = quizState;
+  body.className = 'quiz-body input-quiz';
+  body.replaceChildren(...order.map((itemIndex) => {
+    const item = question.items[itemIndex];
+    const isCorrect = scoreItem(item, answers.get(itemIndex)) === 1;
+    const row = document.createElement('label');
+    row.className = 'input-row';
+    if (checked) row.classList.add(isCorrect ? 'correct' : 'wrong');
+
+    const text = document.createElement('span');
+    text.textContent = item.text;
+    const field = document.createElement('input');
+    field.type = 'text';
+    field.className = 'quiz-input';
+    field.value = answers.get(itemIndex) ?? '';
+    field.dataset.item = itemIndex;
+    field.dataset.key = `input-${itemIndex}`;
+    field.disabled = checked;
+    field.autocomplete = 'off';
+    field.spellcheck = false;
+    field.setAttribute('autocapitalize', 'off');
+    row.append(text, field);
+
+    if (checked && !isCorrect) {
+      const fix = document.createElement('small');
+      fix.className = 'input-fix';
+      fix.textContent = `Poprawnie: ${item.answer}`;
+      row.append(fix);
+    }
+    return row;
+  }));
+}
+
+// Czy uczeń zrobił to, o co prosi polecenie nad parą pól (patrz 'practice' w quizzes.js).
+function isPracticeDone(item, field) {
+  if (item.kind === 'copy') return Boolean(field.pasted) && field.left === item.word && field.right.trim() === item.word;
+  if (item.kind === 'cut') return Boolean(field.cut && field.pasted) && !field.left.trim() && field.right.trim() === item.word;
+  if (item.kind === 'clear') return Boolean(field.cleared) && !field.left;
+  return field.right.trim() === item.word;
+}
+
+function renderPractice(question, body) {
+  const { answers, order, checked, fields } = quizState;
+  body.className = 'quiz-body practice-quiz';
+  body.replaceChildren(...order.map((itemIndex) => {
+    const item = question.items[itemIndex];
+    const row = document.createElement('div');
+    row.className = `practice-row${item.kind === 'clear' ? ' is-single' : ''}`;
+    if (answers.get(itemIndex)) row.classList.add('is-done');
+    if (checked) row.classList.add(answers.get(itemIndex) ? 'correct' : 'wrong');
+
+    const text = document.createElement('p');
+    text.textContent = item.text;
+    const pair = document.createElement('div');
+    pair.className = 'practice-fields';
+
+    (item.kind === 'clear' ? ['left'] : ['left', 'right']).forEach((side) => {
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'quiz-input';
+      input.value = fields[itemIndex][side];
+      input.dataset.item = itemIndex;
+      input.dataset.side = side;
+      input.dataset.key = `practice-${itemIndex}-${side}`;
+      input.disabled = checked;
+      input.autocomplete = 'off';
+      input.spellcheck = false;
+      input.setAttribute('aria-label', `${item.text} — pole ${side === 'left' ? 'po lewej' : 'po prawej'}`);
+
+      // Pola nie da się kliknąć: wejść do niego można tylko klawiszem Tab.
+      if (item.kind === 'tab' && side === 'right') {
+        const wrap = document.createElement('div');
+        wrap.className = 'practice-covered';
+        wrap.title = 'Tu nie klikniesz — użyj Tab';
+        wrap.addEventListener('mousedown', (event) => event.preventDefault());
+        wrap.append(input);
+        pair.append(wrap);
+      } else {
+        pair.append(input);
+      }
+    });
+
+    row.append(text, pair);
+    return row;
+  }));
+}
+
+function handleQuizInput(event) {
+  const input = event.target.closest('.quiz-input');
+  if (!input || !quizState || quizState.checked) return;
+  const question = currentQuestion();
+  const itemIndex = Number(input.dataset.item);
+
+  if (question.type === 'inputs') {
+    const value = input.value.trim();
+    if (value) quizState.answers.set(itemIndex, value);
+    else quizState.answers.delete(itemIndex);
+    updateQuizCheck();
+    return;
+  }
+
+  if (question.type === 'practice') {
+    const field = quizState.fields[itemIndex];
+    field[input.dataset.side] = input.value;
+    const done = isPracticeDone(question.items[itemIndex], field);
+    quizState.answers.set(itemIndex, done);
+    input.closest('.practice-row').classList.toggle('is-done', done);
+  }
+}
+
+// Usunięcie całego zaznaczonego tekstu naraz (np. po Ctrl + A).
+function handlePracticeBeforeInput(event) {
+  const input = event.target.closest('.quiz-input[data-side]');
+  if (!input || !quizState || quizState.checked || !event.inputType.startsWith('delete')) return;
+  if (input.value && input.selectionStart === 0 && input.selectionEnd === input.value.length) {
+    quizState.fields[Number(input.dataset.item)].cleared = true;
+  }
+}
+
+function handlePracticeClipboard(event) {
+  const input = event.target.closest('.quiz-input[data-side]');
+  if (!input || !quizState || quizState.checked) return;
+  const field = quizState.fields[Number(input.dataset.item)];
+  if (event.type === 'cut' && input.dataset.side === 'left') field.cut = true;
+  if (event.type === 'paste' && input.dataset.side === 'right') field.pasted = true;
 }
 
 function renderChoices(question, body) {
@@ -905,6 +1124,45 @@ function handleQuizDragStart(event) {
   if (!chip || !quizState || quizState.checked) return;
   event.dataTransfer.setData('text/plain', chip.dataset.item);
   event.dataTransfer.effectAllowed = 'move';
+  startDragAutoScroll();
+}
+
+// Przewijanie okna, gdy przeciągany element zbliża się do górnej/dolnej krawędzi ekranu.
+const DRAG_SCROLL_EDGE = 80;
+const DRAG_SCROLL_MAX_SPEED = 18;
+let dragScrollY = null;
+let dragScrollFrame = 0;
+
+function trackDragPointer(event) {
+  dragScrollY = event.clientY;
+}
+
+function dragAutoScrollStep() {
+  if (dragScrollY !== null) {
+    const height = window.innerHeight;
+    const edge = Math.min(DRAG_SCROLL_EDGE, height / 4);
+    let delta = 0;
+    if (dragScrollY < edge) delta = -DRAG_SCROLL_MAX_SPEED * (1 - dragScrollY / edge);
+    else if (dragScrollY > height - edge) delta = DRAG_SCROLL_MAX_SPEED * (1 - (height - dragScrollY) / edge);
+    if (delta) window.scrollBy(0, delta);
+  }
+  dragScrollFrame = requestAnimationFrame(dragAutoScrollStep);
+}
+
+function startDragAutoScroll() {
+  stopDragAutoScroll();
+  document.addEventListener('dragover', trackDragPointer);
+  document.addEventListener('dragend', stopDragAutoScroll);
+  document.addEventListener('drop', stopDragAutoScroll);
+  dragScrollFrame = requestAnimationFrame(dragAutoScrollStep);
+}
+
+function stopDragAutoScroll() {
+  cancelAnimationFrame(dragScrollFrame);
+  dragScrollY = null;
+  document.removeEventListener('dragover', trackDragPointer);
+  document.removeEventListener('dragend', stopDragAutoScroll);
+  document.removeEventListener('drop', stopDragAutoScroll);
 }
 
 function handleQuizDragOver(event) {
@@ -1025,9 +1283,13 @@ function countUp(element, target, delay, duration = 700) {
 }
 
 // correct counts partial answers as halves; correctCount counts only full answers.
-function showReward(points, correct, correctCount, total) {
+function showReward(points, correct, correctCount, total, gif) {
   rewardTimers.forEach(clearTimeout);
   rewardTimers = [];
+
+  const character = rewardDialog.querySelector('#reward-character');
+  if (gif) character.src = gif;
+  else character.removeAttribute('src');
 
   const allCorrect = correctCount === total;
   rewardDialog.classList.toggle('is-partial', !allCorrect);
@@ -1041,6 +1303,7 @@ function showReward(points, correct, correctCount, total) {
   countUp(rewardDialog.querySelector('#reward-correct'), correctCount, 500);
   countUp(rewardDialog.querySelector('#reward-accuracy'), Math.round((correct / total) * 100), 650);
 
+  rewardDialog.querySelector('#reward-review').hidden = allCorrect;
   rewardDialog.showModal();
   rewardDialog.querySelector('#reward-action').focus();
   if (allCorrect) launchConfetti();
@@ -1057,6 +1320,11 @@ function closeReward() {
 rewardDialog.querySelector('#reward-action').addEventListener('click', () => {
   closeReward();
   if (quizState?.checked) handleQuizCheck();
+});
+// Zamyka podsumowanie bez przechodzenia dalej, żeby uczeń zobaczył poprawki; „Dalej” jest w stopce.
+rewardDialog.querySelector('#reward-review').addEventListener('click', () => {
+  closeReward();
+  app.querySelector('#quiz-check')?.focus();
 });
 rewardDialog.addEventListener('cancel', () => closeReward());
 
@@ -1096,7 +1364,7 @@ function handleQuizCheck() {
   button.textContent = quizState.step === quiz.questions.length - 1 ? 'Zobacz wynik' : 'Dalej';
   button.focus();
 
-  showReward(points, correct, scores.filter((score) => score === 1).length, total);
+  showReward(points, correct, scores.filter((score) => score === 1).length, total, question.rewardGif);
 }
 
 function renderQuizSummary() {
@@ -1148,6 +1416,8 @@ function route() {
   stopNetworkGame();
   stopFakeNewsGame();
   stopTypingGame();
+  stopColoringGame();
+  stopPivotAnimator();
   closeReward();
   if (match && topics.find((topic) => topic.slug === match[1])?.locked) {
     window.location.replace('#/');

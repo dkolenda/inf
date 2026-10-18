@@ -14,13 +14,16 @@ function renderComputerTask(topic, index, task) {
   app.querySelector('#quiz-footer').hidden = true;
   app.querySelector('#quiz-kicker').textContent = task.title;
   app.querySelector('#quiz-prompt').textContent = task.prompt;
-  app.querySelector('#quiz-hint').innerHTML = task.hint;
+  app.querySelector('#quiz-hint').innerHTML = task.hint || '';
+  app.querySelector('#quiz-hint').hidden = !task.hint;
   setQuizProgress(0);
 
   const body = app.querySelector('#quiz-body');
   body.className = `quiz-body ct-task${task.tone ? ` is-${task.tone}` : ''}`;
   body.innerHTML = `
+    ${task.intro ? `<p class="ct-intro">${task.intro}</p>` : ''}
     ${task.layout || ''}
+    ${task.link ? `<p class="ct-link"><a class="primary-button" href="${task.link.href}" target="_blank" rel="noopener">${task.link.label} <span aria-hidden="true">↗</span></a></p>` : ''}
     ${task.steps.length ? `<ol class="ct-steps">
       ${task.steps.map((step, stepIndex) => `
         <li class="ct-step">

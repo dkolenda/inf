@@ -44,12 +44,15 @@ const NETWORK_DEVICES = {
     text: 'port WAN do modemu, 4 porty LAN i 2 sloty na wzmocnienia'
   },
   ap: { label: 'Access point', icon: '📡', ports: 1, relay: true, text: 'Wi-Fi przez ściany, ale słabnie' },
-  computer: { label: 'Komputer', icon: '🖥️', ports: 1, slots: ['wifi'], text: '1 wypustka i slot na wzmocnienie' },
+  computer: { label: 'Komputer', icon: '🖥️', ports: 1, slots: ['wifi', 'vpn'], text: '1 wypustka i sloty na wzmocnienia' },
   laptop: { label: 'Laptop', icon: '💻', ports: 1, wifi: true, text: 'komputer z wbudowanym Wi-Fi' },
   printer: { label: 'Drukarka', icon: '🖨️', ports: 1, slots: ['wifi'], text: '1 wypustka i slot na wzmocnienie' }
 };
-// C i D to kolejne komputery na planszy — poziom rozróżnia je numerkami (pole tags).
-const NETWORK_MAP_DEVICES = { I: 'internet', M: 'modem', K: 'computer', C: 'computer', D: 'computer', L: 'laptop', P: 'printer' };
+// C–G to kolejne komputery, Q i R kolejne drukarki, J drugie gniazdko — poziom rozróżnia je numerkami (pole tags).
+const NETWORK_MAP_DEVICES = {
+  I: 'internet', J: 'internet', M: 'modem', K: 'computer', C: 'computer', D: 'computer', E: 'computer', F: 'computer', G: 'computer',
+  L: 'laptop', P: 'printer', Q: 'printer', R: 'printer'
+};
 // Sprzęt stawia się na planszy, wzmocnienie wkłada do slotu urządzenia (pole slots w NETWORK_DEVICES).
 const NETWORK_TOOLS = {
   modem: { label: 'Modem', icon: NETWORK_MODEM_ICON, group: 'device' },
@@ -57,7 +60,12 @@ const NETWORK_TOOLS = {
   ap: { label: 'Access point', icon: '📡', group: 'device' },
   wifi: { label: 'Karta Wi-Fi', icon: '📶', group: 'upgrade', text: 'do komputera i drukarki', where: 'Kartę Wi-Fi włóż do slotu komputera albo drukarki.' },
   modemModule: { label: 'Moduł modemu', icon: NETWORK_MODEM_ICON, group: 'upgrade', text: 'do routera — router łączy się prosto z gniazdkiem', where: 'Moduł modemu włóż do slotu routera.' },
-  apModule: { label: 'Moduł access point', icon: '📡', group: 'upgrade', text: 'do routera — router nadaje Wi-Fi', where: 'Moduł access point włóż do slotu routera.' }
+  apModule: { label: 'Moduł access point', icon: '📡', group: 'upgrade', text: 'do routera — router nadaje Wi-Fi', where: 'Moduł access point włóż do slotu routera.' },
+  // Slot VPN widać tylko na poziomach, które dają usługę VPN (onlyWhenGiven).
+  vpn: {
+    label: 'Usługa VPN', icon: '🔒', group: 'upgrade', onlyWhenGiven: true,
+    text: 'do komputera — komputery z tą usługą łączą się tunelem przez internet', where: 'Usługę VPN włóż do slotu komputera.'
+  }
 };
 const NETWORK_TOOL_GROUPS = [
   { id: 'device', label: 'Sprzęt' },
@@ -98,7 +106,10 @@ function renderNetworkGame(topic, index, game) {
     </div>
     <button class="primary-button fg-start" type="button">Start <span aria-hidden="true">▶</span></button>
   `;
-  body.querySelector('.fg-start').addEventListener('click', () => startNetworkLevel(topic, index, game, 0));
+  // Debugowanie: adres z ?poziom=8 (przed #) zaczyna grę od wskazanego poziomu.
+  const debugLevel = Number(new URLSearchParams(location.search).get('poziom')) - 1;
+  const firstLevel = debugLevel >= 0 && debugLevel < game.levels.length ? debugLevel : 0;
+  body.querySelector('.fg-start').addEventListener('click', () => startNetworkLevel(topic, index, game, firstLevel));
   body.querySelector('.fg-start').focus();
   syncStudentProfile();
   window.scrollTo({ top: 0, behavior: 'instant' });
@@ -123,6 +134,10 @@ function startNetworkLevel(topic, index, game, levelIndex) {
     </div>
     <ul class="ng-goals" aria-label="Cele"></ul>
     <div class="ng-tools"></div>
+    ${level.rooms ? `
+      <div class="ng-rooms" style="--cols: ${cols}">
+        ${level.rooms.map((room) => `<span style="grid-column: ${room.from + 1} / ${room.to + 2}">${room.label}</span>`).join('')}
+      </div>` : ''}
     <div class="ng-board" style="--cols: ${cols}; --rows: ${rows}">
       <div class="ng-cells"></div>
       <svg class="ng-wires" viewBox="0 0 ${cols} ${rows}" preserveAspectRatio="none" aria-hidden="true"></svg>
@@ -291,27 +306,42 @@ function ngComputeNetwork(state) {
     if (best) state.links.push(best);
   });
 
-  state.edges = new Map(state.devices.map((device) => [device.id, []]));
+  // lanEdges — kable i Wi-Fi, edges — do tego tunel VPN.
+  state.lanEdges = new Map(state.devices.map((device) => [device.id, []]));
   state.cables.forEach((cable) => {
-    state.edges.get(cable.a).push(cable.b);
-    state.edges.get(cable.b).push(cable.a);
+    state.lanEdges.get(cable.a).push(cable.b);
+    state.lanEdges.get(cable.b).push(cable.a);
   });
   state.links.forEach(({ ap, device }) => {
-    state.edges.get(ap.id).push(device.id);
-    state.edges.get(device.id).push(ap.id);
+    state.lanEdges.get(ap.id).push(device.id);
+    state.lanEdges.get(device.id).push(ap.id);
   });
-  state.online = ngReach(state, 'I');
+  // Gniazdko nie przekazuje sygnału dalej, więc dwa gniazdka nie łączą sieci ze sobą.
+  state.online = new Set(state.devices.filter((device) => device.type === 'internet')
+    .flatMap((socket) => [...ngReach(state, socket.id, state.lanEdges)]));
+
+  // Komputery z usługą VPN łączą się tunelem każdy z każdym. Tunel biegnie przez internet —
+  // działa, gdy oba komputery mają internet.
+  const vpn = state.devices.filter((device) => device.upgrades.includes('vpn'));
+  state.tunnels = vpn.flatMap((a, i) => vpn.slice(i + 1).map((b) => ({ a: a.id, b: b.id })));
+  state.edges = new Map([...state.lanEdges].map(([id, next]) => [id, [...next]]));
+  state.tunnels.forEach((tunnel) => {
+    tunnel.active = state.online.has(tunnel.a) && state.online.has(tunnel.b);
+    if (!tunnel.active) return;
+    state.edges.get(tunnel.a).push(tunnel.b);
+    state.edges.get(tunnel.b).push(tunnel.a);
+  });
 }
 
 // Do kogo dociera sygnał z urządzenia start — dalej przekazują go tylko modem, router i access point.
 // Gniazdko dostawcy przyjmie kabel tylko od modemu, więc internet zawsze płynie przez modem.
-function ngReach(state, startId) {
+function ngReach(state, startId, edges = state.edges) {
   const seen = new Set([startId]);
   const queue = [startId];
   while (queue.length) {
     const id = queue.shift();
     if (id !== startId && !NETWORK_DEVICES[ngDeviceById(state, id).type].relay) continue;
-    state.edges.get(id).forEach((next) => {
+    edges.get(id).forEach((next) => {
       if (seen.has(next)) return;
       seen.add(next);
       queue.push(next);
@@ -320,10 +350,26 @@ function ngReach(state, startId) {
   return seen;
 }
 
+// device, a i b w celu mogą być jednym urządzeniem albo listą.
 function ngGoalMet(state, goal) {
-  if (goal.kind === 'internet') return state.online.has(goal.device);
-  if (goal.kind === 'offline') return !state.online.has(goal.device);
-  return ngReach(state, goal.a).has(goal.b);
+  const list = (value) => [].concat(value);
+  if (goal.kind === 'internet') return list(goal.device).every((id) => state.online.has(id));
+  if (goal.kind === 'offline') return list(goal.device).every((id) => !state.online.has(id));
+  // Sale mają być osobno: liczą się kable i Wi-Fi, tunel VPN jest dozwolony.
+  if (goal.kind === 'isolated') {
+    return list(goal.a).every((a) => {
+      const reach = ngReach(state, a, state.lanEdges);
+      return list(goal.b).every((b) => !reach.has(b));
+    });
+  }
+  return list(goal.a).every((a) => {
+    const reach = ngReach(state, a);
+    return list(goal.b).every((b) => reach.has(b));
+  });
+}
+
+function ngIsRule(goal) {
+  return goal.kind === 'offline' || goal.kind === 'isolated';
 }
 
 // ——— Rysowanie ———
@@ -369,6 +415,19 @@ function ngRenderWires(state) {
       </g>`;
   }).join('');
 
+  // Tunel VPN: linia przerywana prosto nad ścianami, z podpisem pośrodku.
+  const vpn = state.tunnels.map((tunnel) => {
+    const a = center(ngDeviceById(state, tunnel.a));
+    const b = center(ngDeviceById(state, tunnel.b));
+    const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+    return `
+      <g class="ng-vpn${tunnel.active ? ' is-active' : ''}">
+        <line class="ng-vpn-line" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" />
+        <rect class="ng-vpn-badge" x="${mid.x - 0.42}" y="${mid.y - 0.2}" width="0.84" height="0.4" rx="0.2" />
+        <text class="ng-vpn-text" x="${mid.x}" y="${mid.y}">VPN</text>
+      </g>`;
+  }).join('');
+
   let drag = '';
   if (state.drag) {
     const { from, cells, pointer } = state.drag;
@@ -377,7 +436,7 @@ function ngRenderWires(state) {
     drag = `<polyline class="ng-cable-drag" points="${ngPoints(points)}" />`;
   }
 
-  state.body.querySelector('.ng-wires').innerHTML = links + cables + drag;
+  state.body.querySelector('.ng-wires').innerHTML = links + cables + vpn + drag;
 }
 
 function ngRenderDevices(state) {
@@ -402,7 +461,7 @@ function ngRenderDevices(state) {
     const label = `${info.label}${device.tag ? ` ${device.tag}` : ''}${upgrades}${online && device.type !== 'internet' ? ' — ma internet' : ''}`;
     // Okienko slotu: puste czeka na wzmocnienie, pełne pokazuje je i po kliknięciu je wyjmuje.
     // Pierwszy slot jest w prawym dolnym rogu, drugi w lewym górnym.
-    const slot = (info.slots || []).map((id, place) => {
+    const slot = (info.slots || []).filter((id) => !NETWORK_TOOLS[id].onlyWhenGiven || id in state.level.tools).map((id, place) => {
       const tool = NETWORK_TOOLS[id];
       return device.upgrades.includes(id)
         ? `<button class="ng-slot is-filled is-place-${place}" type="button" data-upgrade="${id}" title="Wyjmij: ${tool.label}" aria-label="Wyjmij: ${tool.label}">${tool.icon}</button>`
@@ -460,15 +519,15 @@ function ngMarkPlacing(state, toolId) {
 function ngRenderGoals(state) {
   const results = state.level.goals.map((goal) => ({ goal, met: ngGoalMet(state, goal) }));
   state.body.querySelector('.ng-goals').innerHTML = results.map(({ goal, met }) => {
-    const rule = goal.kind === 'offline';
+    const rule = ngIsRule(goal);
     const tone = rule ? (met ? 'is-rule' : 'is-broken') : (met ? 'is-done' : '');
     const mark = rule ? (met ? '!' : '✗') : (met ? '✓' : '');
     return `<li class="ng-goal ${tone}"><span class="ng-goal-mark" aria-hidden="true">${mark}</span>${goal.label}</li>`;
   }).join('');
 
-  const broken = results.some(({ goal, met }) => goal.kind === 'offline' && !met);
-  if (broken && !state.broken) showNetworkMessage(state, 'Ups! Drukarka dostała internet.', 'bad');
-  state.broken = broken;
+  const broken = results.find(({ goal, met }) => ngIsRule(goal) && !met);
+  if (broken && !state.broken) showNetworkMessage(state, broken.goal.alert || 'Ups! Drukarka dostała internet.', 'bad');
+  state.broken = Boolean(broken);
 
   if (!state.won && results.every(({ met }) => met)) winNetworkLevel(state);
 }
@@ -717,7 +776,7 @@ function ngPlaceTool(state, toolId, cell) {
   }
   state.tools[toolId] -= 1;
   if (!state.tools[toolId]) state.selectedTool = null;
-  const placedMessage = { wifi: 'Karta Wi-Fi włożona!', apModule: 'Router nadaje teraz Wi-Fi!', modemModule: 'Router ma teraz wbudowany modem!' }[toolId] || 'Ustawione!';
+  const placedMessage = { wifi: 'Karta Wi-Fi włożona!', apModule: 'Router nadaje teraz Wi-Fi!', modemModule: 'Router ma teraz wbudowany modem!', vpn: 'Usługa VPN włączona!' }[toolId] || 'Ustawione!';
   showNetworkMessage(state, placedMessage, 'good');
   ngRender(state);
 }

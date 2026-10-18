@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024" role="img" aria-label="Policjant - arkusz części postaci">
+  <style>
+    .outline { stroke: #302a35; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+    .detail { fill: none; stroke: #302a35; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+    .fine { fill: none; stroke: #302a35; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+    .soft { stroke: #302a35; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+  </style>
+  <g id="head" transform="translate(0 0)">
+    <path d="M137 267 C129 214 166 170 207 157 Q225 139 256 138 Q287 139 305 157 C346 170 383 214 375 267 L366 377 Q329 438 256 444 Q183 438 146 377 Z" fill="#6b462e" class="outline"/>
+    <ellipse cx="130" cy="309" rx="20" ry="31" fill="#eab184" class="outline"/>
+    <ellipse cx="382" cy="309" rx="20" ry="31" fill="#eab184" class="outline"/>
+    <circle cx="256" cy="302" r="126" fill="#eab184" class="outline"/>
+    <path d="M151 250 Q163 194 211 177 Q199 212 199 259" fill="#6b462e" class="outline"/>
+    <path d="M361 250 Q349 194 301 177 Q313 212 313 259" fill="#6b462e" class="outline"/>
+    <path d="M205 291 Q220 283 235 292" class="fine"/>
+    <path d="M277 292 Q292 283 307 291" class="fine"/>
+    <circle cx="222" cy="299" r="7" fill="#302a35"/>
+    <circle cx="290" cy="299" r="7" fill="#302a35"/>
+    <path d="M256 307 Q247 330 259 334" class="fine"/>
+    <path d="M215 359 Q256 389 297 359" class="detail"/>
+    <path d="M138 139 L151 86 Q155 67 176 62 Q256 39 336 62 Q357 67 361 86 L374 139 Z" fill="#223e75" class="outline"/>
+    <path d="M151 122 Q256 89 361 122 L369 153 Q256 177 143 153 Z" fill="#2f5595" class="outline"/>
+    <path d="M116 160 Q256 136 396 160 Q379 190 256 188 Q133 190 116 160 Z" fill="#182c55" class="outline"/>
+    <path d="M256 73 L279 86 L273 112 Q256 129 239 112 L233 86 Z" fill="#ffd34f" class="outline"/>
+    <path d="M256 84 L262 94 L259 106 L253 106 L250 94 Z" fill="#fff2a6"/>
+  </g>
+  <g id="torso" transform="translate(512 0)">
+    <path d="M256 96 C219 96 181 105 158 134 L181 382 Q184 413 215 423 L297 423 Q328 413 331 382 L354 134 C331 105 293 96 256 96 Z" fill="#2f5595" class="outline"/>
+    <path d="M224 99 L256 137 L288 99 L311 119 L279 169 H233 L201 119 Z" fill="#d8e7f5" class="outline"/>
+    <path d="M256 137 V366" class="detail"/>
+    <circle cx="256" cy="204" r="6" fill="#d8e7f5"/>
+    <circle cx="256" cy="265" r="6" fill="#d8e7f5"/>
+    <circle cx="256" cy="326" r="6" fill="#d8e7f5"/>
+    <path d="M171 127 L225 113 L231 139 L176 151 Z" fill="#182c55" class="outline"/>
+    <path d="M341 127 L287 113 L281 139 L336 151 Z" fill="#182c55" class="outline"/>
+    <path d="M181 207 H231 V270 Q206 283 181 270 Z" fill="#416baa" class="outline"/>
+    <path d="M281 207 H331 V270 Q306 283 281 270 Z" fill="#416baa" class="outline"/>
+    <path d="M286 171 L310 184 L304 211 Q286 230 268 211 L262 184 Z" fill="#ffd34f" class="outline"/>
+    <path d="M177 363 Q256 379 335 363 L337 423 Q256 439 175 423 Z" fill="#202632" class="outline"/>
+    <rect x="218" y="374" width="76" height="50" rx="9" fill="#bac4cf" class="outline"/>
+    <rect x="237" y="387" width="38" height="24" rx="4" fill="#202632" class="soft"/>
+  </g>
+  <g id="upper-arm" transform="translate(1024 0)">
+    <rect x="221" y="123" width="70" height="266" rx="35" fill="#2f5595" class="outline"/>
+    <path d="M221 191 Q256 206 291 191 L291 228 Q256 242 221 228 Z" fill="#182c55" class="outline"/>
+    <path d="M222 326 Q256 339 290 326 L290 359 Q256 371 222 359 Z" fill="#416baa" class="outline"/>
+  </g>
+  <g id="forearm-hand" transform="translate(0 512)">
+    <rect x="222" y="134" width="68" height="228" rx="34" fill="#2f5595" class="outline"/>
+    <path d="M222 285 Q256 298 290 285 L290 326 Q256 339 222 326 Z" fill="#182c55" class="outline"/>
+    <circle cx="256" cy="345" r="32" fill="#eab184" class="outline"/>
+    <path d="M225 347 Q222 371 231 400 Q239 423 256 426 Q273 423 281 400 Q290 371 287 347 Q274 334 256 334 Q238 334 225 347 Z" fill="#eab184" class="outline"/>
+    <path d="M241 382 Q256 391 271 382" class="fine" opacity=".45"/>
+  </g>
+  <g id="thigh" transform="translate(512 512)">
+    <rect x="213" y="108" width="86" height="296" rx="43" fill="#223e75" class="outline"/>
+    <path d="M256 111 V400" stroke="#172b52" stroke-width="7"/>
+    <path d="M218 178 Q256 193 294 178" class="fine" opacity=".5"/>
+    <path d="M220 338 Q256 351 292 338" class="fine" opacity=".45"/>
+  </g>
+  <g id="shin-shoe" transform="translate(1024 512)">
+    <rect x="219" y="103" width="74" height="304" rx="37" fill="#223e75" class="outline"/>
+    <path d="M256 108 V356" stroke="#172b52" stroke-width="7"/>
+    <path d="M208 337 Q256 351 304 337 L305 415 Q256 430 207 415 Z" fill="#1e222a" class="outline"/>
+    <path d="M191 405 Q256 393 321 405 L327 447 Q317 466 291 469 H221 Q195 466 185 447 Z" fill="#171a20" class="outline"/>
+    <path d="M187 447 Q256 461 325 447 L322 467 Q256 480 190 467 Z" fill="#0d0f13" class="outline"/>
+    <path d="M211 386 H301" class="fine" stroke="#59616d"/>
+  </g>
+</svg>

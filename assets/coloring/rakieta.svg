@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600">
+  <rect id="kosmos" class="c" x="0" y="0" width="800" height="600" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="grunt-planety" class="c" d="M 0 470 C 120 425 252 448 353 475 C 486 510 625 420 800 456 L 800 600 L 0 600 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+
+  <circle id="ksiezyc" class="c" cx="112" cy="112" r="61" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <circle id="krater-1" class="c" cx="91" cy="89" r="18" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <ellipse id="krater-2" class="c" cx="132" cy="132" rx="24" ry="16" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <polygon id="gwiazda-1" class="c" points="244,66 251,84 271,85 256,98 261,118 244,107 227,118 232,98 217,85 237,84" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <polygon id="gwiazda-2" class="c" points="382,112 389,130 409,131 394,144 399,164 382,153 365,164 370,144 355,131 375,130" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <polygon id="gwiazda-3" class="c" points="552,61 559,79 579,80 564,93 569,113 552,102 535,113 540,93 525,80 545,79" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <polygon id="gwiazda-4" class="c" points="706,203 713,221 733,222 718,235 723,255 706,244 689,255 694,235 679,222 699,221" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <polygon id="gwiazda-5" class="c" points="239,245 246,263 266,264 251,277 256,297 239,286 222,297 227,277 212,264 232,263" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="pierscien-planety" class="c" d="M 612 145 C 647 108 728 104 757 133 C 783 159 730 199 665 202 C 609 205 581 182 612 145 Z M 630 153 C 614 172 636 183 670 181 C 713 179 745 155 730 143 C 712 128 653 132 630 153 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <ellipse id="mala-planeta" class="c" cx="684" cy="155" rx="58" ry="45" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+
+  <path id="plomien-zewnetrzny" class="c" d="M 354 449 C 329 490 348 537 374 565 C 400 532 420 488 393 447 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="plomien-wewnetrzny" class="c" d="M 366 456 C 354 489 365 518 375 535 C 387 514 397 483 382 456 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="korpus-rakiety" class="c" d="M 322 406 C 321 317 337 210 374 153 C 413 211 427 318 425 406 C 402 428 345 428 322 406 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="czubek-rakiety" class="c" d="M 337 235 C 345 194 357 166 374 139 C 392 167 404 195 412 235 C 390 247 359 247 337 235 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="statecznik-lewy" class="c" d="M 326 342 C 285 372 274 426 280 466 L 333 426 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="statecznik-prawy" class="c" d="M 422 342 C 463 372 474 426 468 466 L 415 426 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <circle id="obrecz-okna" class="c" cx="374" cy="292" r="48" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <circle id="szyba-rakiety" class="c" cx="374" cy="292" r="33" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="pas-rakiety" class="c" d="M 322 363 C 350 374 397 374 425 363 L 425 395 C 397 406 350 406 322 395 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <rect id="panel-rakiety" class="c" x="351" y="411" width="46" height="31" rx="8" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+
+  <path id="plecak" class="c" d="M 536 312 C 563 298 604 306 613 333 L 610 435 C 595 455 553 451 536 429 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="noga-lewa" class="c" d="M 546 425 L 587 427 L 579 520 L 540 520 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="but-lewy" class="c" d="M 539 510 L 580 510 C 595 519 594 543 578 550 L 526 550 C 518 537 523 519 539 510 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="noga-prawa" class="c" d="M 598 425 L 638 420 L 650 514 L 611 521 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="but-prawy" class="c" d="M 625 508 L 663 503 C 680 510 683 532 669 543 L 619 551 C 607 541 609 520 625 508 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="tulow-astronauty" class="c" d="M 535 312 C 559 292 614 292 637 316 L 641 431 C 616 452 557 453 531 431 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="pas-astronauty" class="c" d="M 532 401 C 561 411 612 411 640 400 L 641 432 C 611 443 558 443 531 431 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <rect id="panel-astronauty" class="c" x="553" y="338" width="66" height="48" rx="9" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="ramie-opuszczone" class="c" d="M 630 321 C 657 324 676 354 680 386 C 683 408 658 417 648 397 L 619 347 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <ellipse id="rekawica-opuszczona" class="c" cx="674" cy="407" rx="28" ry="25" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="ramie-machajace" class="c" d="M 541 323 C 512 320 495 291 484 255 C 477 233 499 220 512 241 L 553 296 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="rekawica-machajaca" class="c" d="M 486 260 C 469 258 459 246 462 232 L 467 205 C 470 193 483 195 484 207 L 485 220 L 493 190 C 497 179 510 183 508 195 L 504 218 L 514 197 C 520 187 531 193 527 204 L 518 229 C 513 250 503 260 486 260 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <ellipse id="helm-astronauty" class="c" cx="585" cy="262" rx="69" ry="65" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <ellipse id="wizjer" class="c" cx="585" cy="262" rx="50" ry="43" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <path id="kolnierz" class="c" d="M 546 307 C 566 318 604 318 625 306 L 634 325 C 608 340 560 340 535 325 Z" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+  <circle id="guzik-panelu" class="c" cx="568" cy="359" r="9" fill="#ffffff" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+
+  <g id="linie" pointer-events="none" fill="none" stroke="#222222" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="569" cy="258" r="5" fill="#222222"/>
+    <circle cx="599" cy="258" r="5" fill="#222222"/>
+    <path d="M 568 279 C 579 289 594 289 604 279"/>
+    <path d="M 588 355 L 605 355 M 588 368 L 608 368"/>
+    <path d="M 554 470 L 579 472 M 613 470 L 642 466"/>
+    <path d="M 540 526 L 579 526 M 622 524 L 663 518"/>
+    <path d="M 302 416 L 324 405 M 424 405 L 447 417"/>
+    <path d="M 77 112 C 88 119 99 119 108 112 M 122 79 C 131 84 140 84 147 79"/>
+  </g>
+</svg>

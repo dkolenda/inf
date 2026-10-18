@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test wyglądów Pivot Animatora</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 20px; background: #e8edf5; color: #25304a; font: 16px/1.25 system-ui, sans-serif; }
+    h1 { margin: 0 0 16px; font-size: 24px; }
+    .row { display: grid; grid-template-columns: 350px 350px 350px 410px; gap: 14px; margin-bottom: 16px; }
+    .card { background: white; border: 2px solid #b7c1d4; border-radius: 12px; padding: 9px; box-shadow: 0 3px 8px #5e6a8025; }
+    h2, h3 { margin: 0 0 6px; font-size: 16px; text-align: center; }
+    canvas { display: block; margin: auto; border: 1px solid #cad2df; border-radius: 7px; background-color: #fff; background-image: linear-gradient(45deg,#eef1f5 25%,transparent 25%),linear-gradient(-45deg,#eef1f5 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#eef1f5 75%),linear-gradient(-45deg,transparent 75%,#eef1f5 75%); background-size: 24px 24px; background-position: 0 0,0 12px,12px -12px,-12px 0; }
+    .pose { width: 330px; height: 340px; }
+    .template { width: 384px; height: 256px; margin-top: 42px; }
+  </style>
+</head>
+<body>
+  <h1>Kontrola wyglądów: 3 pozy + szablon przegubów</h1>
+  <main id="tests"></main>
+  <script src="../../../pivot-animator.js"></script>
+  <script>
+    'use strict';
+    const TEST_SKINS = [
+      ['Kowboj', '../kowboj.png'],
+      ['Policjant', '../policjant.png'],
+      ['Królewna', '../krolewna.png']
+    ];
+    const POSES = [
+      ['Stoi', { leftArm: -140, leftForearm: -152, rightArm: 140, rightForearm: 152, leftThigh: -160, leftShin: -171, rightThigh: 160, rightShin: 171 }],
+      ['Idzie', { leftArm: -48, leftForearm: -118, rightArm: 137, rightForearm: 164, leftThigh: -131, leftShin: -168, rightThigh: 174, rightShin: 139 }],
+      ['Macha', { leftArm: -140, leftForearm: -155, rightArm: 55, rightForearm: -12, leftThigh: -160, leftShin: -171, rightThigh: 160, rightShin: 171 }]
+    ];
+    const LENGTHS = { torso: 52, head: 42, upperArm: Math.hypot(22, 24), forearm: Math.hypot(14, 26), thigh: Math.hypot(14, 32), shin: Math.hypot(6, 38) };
+
+    function next(point, length, degrees, scale) {
+      const angle = degrees * Math.PI / 180;
+      return [point[0] + Math.sin(angle) * length * scale, point[1] - Math.cos(angle) * length * scale];
+    }
+
+    function poseJoints(spec) {
+      const scale = 1.55;
+      const hip = [165, 190];
+      const neck = next(hip, LENGTHS.torso, 0, scale);
+      const head = next(neck, LENGTHS.head, 0, scale);
+      const leftElbow = next(neck, LENGTHS.upperArm, spec.leftArm, scale);
+      const leftWrist = next(leftElbow, LENGTHS.forearm, spec.leftForearm, scale);
+      const rightElbow = next(neck, LENGTHS.upperArm, spec.rightArm, scale);
+      const rightWrist = next(rightElbow, LENGTHS.forearm, spec.rightForearm, scale);
+      const leftKnee = next(hip, LENGTHS.thigh, spec.leftThigh, scale);
+      const leftAnkle = next(leftKnee, LENGTHS.shin, spec.leftShin, scale);
+      const rightKnee = next(hip, LENGTHS.thigh, spec.rightThigh, scale);
+      const rightAnkle = next(rightKnee, LENGTHS.shin, spec.rightShin, scale);
+      return [hip, neck, head, leftElbow, leftWrist, rightElbow, rightWrist, leftKnee, leftAnkle, rightKnee, rightAnkle];
+    }
+
+    function drawChecker(ctx, width, height) {
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = '#eef1f5';
+      for (let y = 0; y < height; y += 20) for (let x = 0; x < width; x += 20) {
+        if ((x / 20 + y / 20) % 2 === 0) ctx.fillRect(x, y, 20, 20);
+      }
+    }
+
+    function drawPose(canvas, image, spec) {
+      const ctx = canvas.getContext('2d');
+      drawChecker(ctx, canvas.width, canvas.height);
+      const joints = poseJoints(spec);
+      const segments = PIVOT_FIGURES.stickman.segments;
+      const skins = PIVOT_FIGURES.stickman.skin;
+      PIVOT_FIGURES.stickman.drawOrder.forEach((index) => {
+        const [from, to] = segments[index];
+        drawPivotSkinPart(ctx, image, PIVOT_SKIN_PARTS[skins[index]], joints[from], joints[to]);
+      });
+    }
+
+    function drawTemplate(canvas, image) {
+      const ctx = canvas.getContext('2d');
+      drawChecker(ctx, canvas.width, canvas.height);
+      const scale = canvas.width / PIVOT_SKIN_W;
+      ctx.save();
+      ctx.scale(scale, scale);
+      ctx.drawImage(image, 0, 0);
+      const template = pivotSkinTemplate();
+      const tinted = document.createElement('canvas');
+      tinted.width = template.width;
+      tinted.height = template.height;
+      const tintedContext = tinted.getContext('2d');
+      tintedContext.drawImage(template, 0, 0);
+      tintedContext.globalCompositeOperation = 'source-in';
+      tintedContext.fillStyle = '#00b9ff';
+      tintedContext.fillRect(0, 0, tinted.width, tinted.height);
+      ctx.globalAlpha = 0.18;
+      ctx.drawImage(tinted, 0, 0);
+      ctx.globalAlpha = 0.85;
+      ctx.strokeStyle = '#00b9ff';
+      ctx.fillStyle = '#ff2c8b';
+      ctx.lineWidth = 8;
+      ctx.lineCap = 'round';
+      for (const [name, part] of Object.entries(PIVOT_SKIN_PARTS)) {
+        const x = part.cell[0] * PIVOT_SKIN_CELL + PIVOT_SKIN_CELL / 2;
+        const y = part.cell[1] * PIVOT_SKIN_CELL;
+        ctx.beginPath();
+        if (name === 'head') ctx.arc(x, y + (part.top + part.bottom) / 2, (part.bottom - part.top) / 2, 0, Math.PI * 2);
+        else { ctx.moveTo(x, y + part.top); ctx.lineTo(x, y + part.bottom); }
+        ctx.stroke();
+        for (const jointY of [part.top, part.bottom]) {
+          ctx.beginPath();
+          ctx.arc(x, y + jointY, 10, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+    }
+
+    function loadImage(src) {
+      return new Promise((resolve, reject) => {
+        const image = new Image();
+        image.onload = () => resolve(image);
+        image.onerror = reject;
+        image.src = src;
+      });
+    }
+
+    Promise.all(TEST_SKINS.map(async ([label, src]) => {
+      const image = await loadImage(src);
+      const row = document.createElement('section');
+      row.className = 'row';
+      for (const [poseLabel, spec] of POSES) {
+        const card = document.createElement('article');
+        card.className = 'card';
+        card.innerHTML = `<h2>${label}</h2><h3>${poseLabel}</h3><canvas class="pose" width="330" height="340"></canvas>`;
+        row.append(card);
+        drawPose(card.querySelector('canvas'), image, spec);
+      }
+      const card = document.createElement('article');
+      card.className = 'card';
+      card.innerHTML = `<h2>${label}</h2><h3>Nałożony pivotSkinTemplate()</h3><canvas class="template" width="384" height="256"></canvas>`;
+      row.append(card);
+      drawTemplate(card.querySelector('canvas'), image);
+      return row;
+    })).then((rows) => {
+      rows.forEach((row) => document.querySelector('#tests').append(row));
+      document.documentElement.dataset.ready = 'true';
+    });
+  </script>
+</body>
+</html>
+

@@ -2,3 +2,9 @@ scottie-go.png – grafika ze strony scottiego.com (Beck and Box), zmniejszona; 
 
 frozen-elza.png – grafika z kursu „Kraina Lodu” na studio.code.org (© Disney); użyta w celach edukacyjnych.
 hoc-angry-birds.png – grafika z Godziny Kodowania „Klasyczny labirynt” na studio.code.org (Angry Birds © Rovio); użyta w celach edukacyjnych.
+
+brush-ninja.png – zrzut ekranu edytora ze strony brush.ninja; użyty w celach edukacyjnych.
+pivot-animator.png – zrzut ekranu programu ze strony pivotanimator.net, zmniejszony; użyty w celach edukacyjnych.
+
+paint-photopea.png – grafika wygenerowana za pomocą OpenAI; realistyczna kompozycja interfejsów Microsoft Paint i Photopea, użyta w celach edukacyjnych.
+paint-photopea-zaproszenie.png – przeróbka paint-photopea.png: robota zastąpiono rysunkiem kartki z zaproszeniem (wykonanym w SVG).

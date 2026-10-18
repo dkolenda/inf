@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024" role="img" aria-label="Królewna - arkusz części postaci">
+  <style>
+    .outline { stroke: #302a35; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+    .detail { fill: none; stroke: #302a35; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+    .fine { fill: none; stroke: #302a35; stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+    .soft { stroke: #302a35; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+  </style>
+  <g id="head" transform="translate(0 0)">
+    <path d="M118 256 Q115 171 176 139 Q206 116 256 118 Q306 116 336 139 Q397 171 394 256 L397 424 Q397 466 360 478 L322 456 Q290 480 256 478 Q222 480 190 456 L152 478 Q115 466 115 424 Z" fill="#8a532f" class="outline"/>
+    <path d="M130 278 Q111 335 119 432 Q123 472 158 478 Q184 470 184 434 L180 304 Z" fill="#9b6036" class="outline"/>
+    <path d="M382 278 Q401 335 393 432 Q389 472 354 478 Q328 470 328 434 L332 304 Z" fill="#9b6036" class="outline"/>
+    <ellipse cx="130" cy="309" rx="19" ry="31" fill="#f3bd9a" class="outline"/>
+    <ellipse cx="382" cy="309" rx="19" ry="31" fill="#f3bd9a" class="outline"/>
+    <circle cx="256" cy="302" r="126" fill="#f3bd9a" class="outline"/>
+    <path d="M145 253 Q164 164 250 172 Q214 206 202 253 Q180 230 145 253 Z" fill="#8a532f" class="outline"/>
+    <path d="M367 253 Q348 164 262 172 Q298 206 310 253 Q332 230 367 253 Z" fill="#8a532f" class="outline"/>
+    <path d="M211 293 Q225 283 239 293" class="fine"/>
+    <path d="M273 293 Q287 283 301 293" class="fine"/>
+    <circle cx="225" cy="300" r="7" fill="#302a35"/>
+    <circle cx="287" cy="300" r="7" fill="#302a35"/>
+    <circle cx="190" cy="337" r="12" fill="#ef8d9c" opacity=".55"/>
+    <circle cx="322" cy="337" r="12" fill="#ef8d9c" opacity=".55"/>
+    <path d="M256 307 Q247 328 259 333" class="fine"/>
+    <path d="M220 358 Q256 387 292 358 Q284 400 256 403 Q228 400 220 358 Z" fill="#fff8f4" class="outline"/>
+    <path d="M171 143 L151 57 L210 91 L256 22 L302 91 L361 57 L341 143 Q256 166 171 143 Z" fill="#ffd34f" class="outline"/>
+    <circle cx="202" cy="111" r="13" fill="#f0649c" class="soft"/>
+    <circle cx="256" cy="87" r="15" fill="#66bbed" class="soft"/>
+    <circle cx="310" cy="111" r="13" fill="#f0649c" class="soft"/>
+    <path d="M177 139 Q256 157 335 139" class="fine" opacity=".55"/>
+  </g>
+  <g id="torso" transform="translate(512 0)">
+    <path d="M202 290 Q256 312 310 290 L428 476 Q438 494 414 499 H98 Q74 494 84 476 Z" fill="#ed6fa8" class="outline"/>
+    <path d="M202 295 Q256 319 310 295 L341 486 H171 Z" fill="#f58fbd" class="outline"/>
+    <path d="M172 475 Q256 445 340 475" class="fine" stroke="#ffd0e4"/>
+    <path d="M256 310 V486" class="fine" stroke="#d65191" opacity=".65"/>
+    <path d="M256 96 C221 96 189 107 174 137 L201 307 Q219 335 256 340 Q293 335 311 307 L338 137 C323 107 291 96 256 96 Z" fill="#ef78ae" class="outline"/>
+    <path d="M218 100 Q256 142 294 100 L311 132 Q291 170 256 178 Q221 170 201 132 Z" fill="#f3bd9a" class="outline"/>
+    <path d="M205 142 Q256 177 307 142 L310 286 Q286 313 256 317 Q226 313 202 286 Z" fill="#f58fbd" class="outline"/>
+    <path d="M256 174 V314" class="fine" stroke="#d65191"/>
+    <path d="M217 196 L240 209 L232 234 L205 224 Z" fill="#ffd6e8" class="soft"/>
+    <path d="M295 196 L272 209 L280 234 L307 224 Z" fill="#ffd6e8" class="soft"/>
+    <path d="M198 284 Q256 308 314 284 L321 326 Q256 352 191 326 Z" fill="#d65191" class="outline"/>
+    <circle cx="256" cy="321" r="16" fill="#ffd34f" class="soft"/>
+  </g>
+  <g id="upper-arm-puff" transform="translate(1024 0)">
+    <rect x="222" y="124" width="68" height="264" rx="34" fill="#f3bd9a" class="outline"/>
+    <ellipse cx="256" cy="158" rx="55" ry="49" fill="#ef78ae" class="outline"/>
+    <path d="M215 148 Q256 118 297 148" class="fine" stroke="#ffd0e4"/>
+    <path d="M222 181 Q256 201 290 181 L289 246 Q256 260 223 246 Z" fill="#f58fbd" class="outline"/>
+    <path d="M222 318 Q256 330 290 318" class="fine" opacity=".4"/>
+  </g>
+  <g id="forearm-hand" transform="translate(0 512)">
+    <rect x="222" y="134" width="68" height="228" rx="34" fill="#f3bd9a" class="outline"/>
+    <path d="M220 272 Q256 286 292 272 L289 314 Q256 326 223 314 Z" fill="#ffd34f" class="outline"/>
+    <circle cx="256" cy="345" r="32" fill="#f3bd9a" class="outline"/>
+    <path d="M225 347 Q222 371 231 400 Q239 423 256 426 Q273 423 281 400 Q290 371 287 347 Q274 334 256 334 Q238 334 225 347 Z" fill="#f3bd9a" class="outline"/>
+    <path d="M241 382 Q256 391 271 382" class="fine" opacity=".38"/>
+  </g>
+  <g id="thigh-dress" transform="translate(512 512)">
+    <rect x="213" y="108" width="86" height="296" rx="43" fill="#ed6fa8" class="outline"/>
+    <path d="M256 112 V400" class="fine" stroke="#ffd0e4"/>
+    <path d="M219 176 Q256 194 293 176" class="fine" stroke="#d65191"/>
+    <path d="M220 340 Q256 356 292 340" class="fine" stroke="#d65191"/>
+  </g>
+  <g id="shin-slipper" transform="translate(1024 512)">
+    <rect x="220" y="104" width="72" height="302" rx="36" fill="#f4c8bc" class="outline"/>
+    <path d="M221 185 Q256 200 291 185" class="fine" stroke="#e6aa9a"/>
+    <path d="M209 337 Q256 351 303 337 L302 409 Q256 426 210 409 Z" fill="#f58fbd" class="outline"/>
+    <path d="M190 401 Q256 389 322 401 L328 444 Q319 463 292 466 H220 Q193 463 184 444 Z" fill="#ed6fa8" class="outline"/>
+    <path d="M186 444 Q256 458 326 444 L322 466 Q256 478 190 466 Z" fill="#b84078" class="outline"/>
+    <path d="M221 359 L291 407 M291 359 L221 407" class="fine" stroke="#ffd34f"/>
+    <circle cx="256" cy="385" r="11" fill="#ffd34f" class="soft"/>
+  </g>
+</svg>

@@ -9,7 +9,12 @@
     <meta name="theme-color" content="#58cc02" />
     <meta name="description" content="Interaktywne zadania z informatyki dla uczniów." />
     <title>Informatyczna Przygoda</title>
-    <link rel="stylesheet" href="styles.css?v=30" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml" />
+    <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-title" content="Informatyka" />
+    <link rel="stylesheet" href="styles.css?v=35" />
   </head>
   <body>
     <div id="app"></div>
@@ -28,27 +33,6 @@
       </header>
 
       <main class="home-view">
-        <section class="hero">
-          <div class="hero-copy">
-            <p class="eyebrow">Twoja informatyczna przygoda</p>
-            <h1>Wybierz temat<br />i ruszaj po <span>wiedzę!</span></h1>
-            <p class="hero-lead">Krótkie zadania, nowe umiejętności i mnóstwo satysfakcji. Każdy krok przybliża Cię do celu.</p>
-          </div>
-          <div class="hero-art" aria-hidden="true">
-            <div class="code-card">
-              <div class="code-dots"><i></i><i></i><i></i></div>
-              <div class="code-line w-80"></div>
-              <div class="code-line w-55"></div>
-              <div class="code-line w-70"></div>
-              <div class="code-line w-40"></div>
-              <div class="success-badge">✓</div>
-            </div>
-            <span class="float-icon icon-bulb">💡</span>
-            <span class="float-icon icon-star">★</span>
-            <span class="float-icon icon-brackets">{ }</span>
-          </div>
-        </section>
-
         <section class="topics" aria-labelledby="topics-title">
           <div class="section-heading">
             <div>
@@ -58,27 +42,6 @@
             <p>Każdy temat to osobna przygoda. Zacznij od dowolnego miejsca.</p>
           </div>
           <div class="topic-grid" id="topic-grid"></div>
-          <section class="suggested-games" aria-labelledby="suggested-games-title">
-            <h3 id="suggested-games-title">🎮 Sugerowane gry</h3>
-            <div class="games-grid">
-              <a class="game-card" href="https://ncase.me/trust/" target="_blank" rel="noopener noreferrer">
-                <span aria-hidden="true">🤝</span>
-                <div><strong>The Evolution of Trust</strong><p>Interaktywna opowieść o zaufaniu i współpracy.</p></div>
-              </a>
-              <a class="game-card" href="https://hextris.io/" target="_blank" rel="noopener noreferrer">
-                <span aria-hidden="true">⬡</span>
-                <div><strong>Hextris</strong><p>Szybka łamigłówka inspirowana Tetrisem.</p></div>
-              </a>
-              <a class="game-card" href="https://www.haxball.com/" target="_blank" rel="noopener noreferrer">
-                <span aria-hidden="true">⚽</span>
-                <div><strong>HaxBall</strong><p>Prosta piłka nożna online dla wielu graczy.</p></div>
-              </a>
-              <a class="game-card" href="https://play2048.co/" target="_blank" rel="noopener noreferrer">
-                <span aria-hidden="true">🔢</span>
-                <div><strong>2048</strong><p>Łącz kafelki i dojdź do liczby 2048.</p></div>
-              </a>
-            </div>
-          </section>
         </section>
 
         <section class="motivation" aria-label="Motywacja do nauki">
@@ -205,8 +168,7 @@
           <span class="reward-spark s1">★</span>
           <span class="reward-spark s2">✦</span>
           <span class="reward-spark s3">●</span>
-          <!-- TODO: podmień na grafikę postaci, np. <img class="reward-character" src="assets/maskotka-nagroda.png" alt="" /> -->
-          <div class="reward-character reward-character-placeholder"></div>
+          <img class="reward-character" id="reward-character" alt="" />
           <span class="reward-floor"></span>
         </div>
         <h2 id="reward-title">Świetnie!</h2>
@@ -226,11 +188,12 @@
           </div>
         </div>
         <button class="primary-button reward-action" id="reward-action" type="button">Dalej <span aria-hidden="true">→</span></button>
+        <button class="secondary-button reward-review" id="reward-review" type="button">Zobacz, gdzie był błąd</button>
       </div>
       <canvas class="confetti-canvas" id="confetti-canvas" aria-hidden="true"></canvas>
     </dialog>
 
-    <script src="quizzes.js?v=34"></script>
+    <script src="quizzes.js?v=38"></script>
     <script src="file-game.js?v=5"></script>
     <script src="balloon-game.js?v=1"></script>
     <script src="network-game.js?v=7"></script>
@@ -238,6 +201,8 @@
     <script src="typing-game.js?v=3"></script>
     <script src="teacher-code.js?v=1"></script>
     <script src="computer-task.js?v=4"></script>
-    <script src="app.js?v=26"></script>
+    <script src="coloring-game.js?v=6"></script>
+    <script src="pivot-animator.js?v=6"></script>
+    <script src="app.js?v=30"></script>
   </body>
 </html>

@@ -36,6 +36,7 @@ const computerBasicsQuiz = {
     {
       type: 'buckets',
       label: 'A',
+      rewardGif: 'assets/reward-gifs/music-headphones.gif',
       prompt: 'Jakim urządzeniem jest każdy z tych sprzętów?',
       hint: 'Kliknij urządzenie, a potem grupę — albo przeciągnij je myszą. Kliknij umieszczone urządzenie, aby je cofnąć.',
       buckets: [
@@ -59,6 +60,7 @@ const computerBasicsQuiz = {
     {
       type: 'choices',
       label: 'B',
+      rewardGif: 'assets/reward-gifs/hush-minecraft-dimans.gif',
       prompt: 'Czy to jest komputer osobisty?',
       hint: 'Przy każdym urządzeniu wybierz „Tak” albo „Nie”.',
       options: [
@@ -79,6 +81,7 @@ const computerBasicsQuiz = {
     {
       type: 'choices',
       label: 'C',
+      rewardGif: 'assets/reward-gifs/cat-respect.gif',
       prompt: 'Prawda czy fałsz?',
       hint: 'Przeczytaj uważnie każde zdanie.',
       shuffle: false,
@@ -117,6 +120,7 @@ const computerBasicsQuiz = {
     {
       type: 'buckets',
       label: 'D',
+      rewardGif: 'assets/reward-gifs/despicable-me-minion.gif',
       prompt: 'Dopasuj pliki do ich typu.',
       hint: 'Patrz na rozszerzenie — to końcówka nazwy po kropce. Folder nie ma rozszerzenia.',
       mono: true,
@@ -152,6 +156,7 @@ const computerBasicsQuiz = {
     {
       type: 'buckets',
       label: 'E',
+      rewardGif: 'assets/reward-gifs/pikachu-clap.gif',
       match: true,
       prompt: 'Dopasuj hasło do definicji.',
       hint: 'Kliknij hasło, a potem pole obok pasującej definicji.',
@@ -172,6 +177,42 @@ const computerBasicsQuiz = {
         { text: 'Plik', answer: 'file' },
         { text: 'Start', answer: 'start' },
         { text: 'Pendrive', answer: 'pendrive' }
+      ]
+    }
+  ]
+};
+
+// Spokojne wprowadzenie do gry „Format pliku”: te same grupy, ale bez pośpiechu i z opisami.
+const fileTypesIntroQuiz = {
+  id: 'praca-na-komputerze/typy-plikow',
+  title: 'Jakie to pliki?',
+  questions: [
+    {
+      type: 'buckets',
+      label: 'A',
+      prompt: 'Dopasuj pliki do kategorii.',
+      hint: 'Każdy plik ma nazwę i rozszerzenie — to końcówka po kropce, np. w „kot.jpg” rozszerzenie to „jpg”. Po rozszerzeniu poznasz, co jest w pliku. Pod nazwą każdej grupy masz podpowiedź.',
+      mono: true,
+      buckets: [
+        { id: 'text', label: 'Pliki tekstowe', note: 'coś napisanego: .txt .docx .odt .rtf' },
+        { id: 'image', label: 'Grafika', note: 'zdjęcia i obrazki: .jpg .png .gif .bmp' },
+        { id: 'sheet', label: 'Arkusze kalkulacyjne', note: 'tabelki z liczbami: .xlsx .xls .ods' },
+        { id: 'program', label: 'Programy', note: 'coś, co się uruchamia: .exe .msi .apk' },
+        { id: 'none', label: 'Inne pliki', note: 'muzyka, filmy, paczki, prezentacje: .mp3 .mp4 .zip .pptx — w grze przepuść je dalej' }
+      ],
+      items: [
+        { text: 'notatki.txt', icon: fileIcons.txt, answer: 'text' },
+        { text: 'zaproszenie.docx', icon: fileIcons.docx, answer: 'text' },
+        { text: 'wiersz.odt', icon: fileIcons.odt, answer: 'text' },
+        { text: 'kot.jpg', icon: fileIcons.image, answer: 'image' },
+        { text: 'rysunek.png', icon: fileIcons.image, answer: 'image' },
+        { text: 'animacja.gif', icon: fileIcons.image, answer: 'image' },
+        { text: 'oceny.xlsx', icon: fileIcons.xlsx, answer: 'sheet' },
+        { text: 'budzet.ods', icon: fileIcons.ods, answer: 'sheet' },
+        { text: 'gra.exe', icon: fileIcons.exe, answer: 'program' },
+        { text: 'instalator.msi', icon: fileIcons.msi, answer: 'program' },
+        { text: 'piosenka.mp3', icon: badgeIcon('#e91e63', '♪'), answer: 'none' },
+        { text: 'film.mp4', icon: badgeIcon('#d32f2f', '▶'), answer: 'none' }
       ]
     }
   ]
@@ -269,6 +310,126 @@ const desktopFolderTask = {
   ]
 };
 
+// Quiz „Dokumenty tekstowe”: klawiatura, polskie litery i skróty klawiszowe.
+// 'keyboard': klawiatura z pustymi miejscami (slot) — działa jak dopasowanie, każdy klawisz pasuje do jednego miejsca.
+//   Klawisz to napis albo { label, w (szerokość), slot }. Klawisze bez napisu są puste, żeby nie zdradzać odpowiedzi.
+// 'inputs': uczeń wpisuje tekst w pole; `value` to tekst wpisany na start. Wielkość liter ma znaczenie.
+// 'practice': para pól — lewe pełne, prawe puste; kind mówi, co trzeba zrobić:
+//   copy — skopiuj i wklej, cut — wytnij i wklej, clear — zaznacz wszystko i usuń, tab — przejdź Tabem do zasłoniętego pola.
+const keyboardShortcutsQuiz = {
+  id: 'dokumenty-tekstowe/quiz-klawiatura',
+  title: 'Quiz: Klawiatura i skróty',
+  questions: [
+    {
+      type: 'keyboard',
+      label: 'A',
+      rewardGif: 'assets/reward-gifs/cat-dance-cat.gif',
+      match: true,
+      prompt: 'Wstaw brakujące klawisze na klawiaturze.',
+      hint: 'Przeciągnij klawisz na puste miejsce — albo kliknij klawisz, a potem puste miejsce. Kliknij wstawiony klawisz, aby go cofnąć.',
+      keyboard: [
+        [{ slot: 'esc' }, { w: 0.5, gap: true }, 'F1', 'F2', 'F3', 'F4', { w: 0.5, gap: true }, 'F5', 'F6', 'F7', 'F8', { w: 0.5, gap: true }, 'F9', 'F10', 'F11', 'F12'],
+        ['`', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '=', { slot: 'backspace', w: 2 }],
+        [{ slot: 'tab', w: 1.5 }, 'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '[', ']', { label: '\\', w: 1.5 }],
+        [{ label: 'Caps Lock', w: 1.75 }, 'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', "'", { label: 'Enter', w: 2.25 }],
+        [{ slot: 'shift', w: 2.25 }, 'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', { w: 2.75 }],
+        [{ slot: 'ctrl', w: 1.5 }, { label: '⊞', w: 1.25 }, { w: 1.25 }, { slot: 'space', w: 6.25 }, { slot: 'alt', w: 1.25 }, { label: '☰', w: 1.25 }, { w: 2.25 }]
+      ],
+      items: [
+        { text: 'Esc', answer: 'esc' },
+        { text: 'Backspace', answer: 'backspace' },
+        { text: 'Tab', answer: 'tab' },
+        { text: 'Shift', answer: 'shift' },
+        { text: 'Ctrl', answer: 'ctrl' },
+        { text: 'Alt', answer: 'alt' },
+        { text: 'Spacja', answer: 'space' }
+      ]
+    },
+    {
+      type: 'buckets',
+      label: 'B',
+      rewardGif: 'assets/reward-gifs/spongebob.gif',
+      match: true,
+      prompt: 'Co robi ten klawisz?',
+      hint: 'Kliknij klawisz, a potem pole obok pasującego opisu.',
+      buckets: [
+        { id: 'tab', label: 'Przenosi kursor do następnego pola albo robi wcięcie w tekście.' },
+        { id: 'shift', label: 'Przytrzymany razem z literą pisze wielką literę.' },
+        { id: 'space', label: 'Wstawia odstęp między wyrazami.' },
+        { id: 'caps', label: 'Włącza i wyłącza pisanie samymi wielkimi literami.' }
+      ],
+      items: [
+        { text: 'Tab', answer: 'tab' },
+        { text: 'Shift', answer: 'shift' },
+        { text: 'Spacja', answer: 'space' },
+        { text: 'Caps Lock', answer: 'caps' }
+      ]
+    },
+    {
+      type: 'inputs',
+      label: 'C',
+      rewardGif: 'assets/reward-gifs/dance-hamster.gif',
+      shuffle: false,
+      prompt: 'Wpisz w pola.',
+      hint: 'Wpisz dokładnie to, o co prosi polecenie. Wielkość liter ma znaczenie!',
+      tip: {
+        title: 'Jak napisać wielką albo polską literę?',
+        steps: [
+          'Wielka litera: przytrzymaj `Shift` i naciśnij literę.',
+          'Polska litera: przytrzymaj prawy `Alt` i naciśnij literę, np. `Alt` + `z` = ż.',
+          'Wielka polska litera: przytrzymaj `Shift` i prawy `Alt`, a potem naciśnij literę.'
+        ]
+      },
+      items: [
+        { text: 'Wielka litera S', answer: 'S' },
+        { text: 'Litera ż', answer: 'ż' },
+        { text: 'Litera s', answer: 's' },
+        { text: 'Litera ź', answer: 'ź' },
+        { text: 'Litera ć', answer: 'ć' },
+        { text: 'Wielka litera Ą', answer: 'Ą' },
+        { text: 'Słowo: łyżwa', answer: 'łyżwa' },
+        { text: 'Słowo: żółw', answer: 'żółw' },
+        { text: 'Usuń literę A ze słowa', value: 'koAt', answer: 'kot' }
+      ]
+    },
+    {
+      type: 'buckets',
+      label: 'D',
+      rewardGif: 'assets/reward-gifs/shia-labeouf-clapping.gif',
+      match: true,
+      mono: true,
+      prompt: 'Co robi ten skrót klawiszowy?',
+      hint: 'Kliknij skrót, a potem pole obok pasującego opisu.',
+      buckets: [
+        { id: 'copy', label: 'Kopiuj', note: 'zapamiętuje zaznaczenie w schowku' },
+        { id: 'cut', label: 'Wytnij', note: 'zabiera zaznaczenie do schowka' },
+        { id: 'paste', label: 'Wklej', note: 'wstawia to, co jest w schowku' },
+        { id: 'all', label: 'Zaznacz wszystko', note: 'zaznacza cały tekst' }
+      ],
+      items: [
+        { text: 'Ctrl + C', answer: 'copy' },
+        { text: 'Ctrl + X', answer: 'cut' },
+        { text: 'Ctrl + V', answer: 'paste' },
+        { text: 'Ctrl + A', answer: 'all' }
+      ]
+    },
+    {
+      type: 'practice',
+      label: 'E',
+      rewardGif: 'assets/reward-gifs/pikachu-clap.gif',
+      shuffle: false,
+      prompt: 'Użyj skrótów klawiszowych.',
+      hint: 'Zrób to, co jest napisane nad polami. Gdy się uda, pola zrobią się zielone.',
+      items: [
+        { kind: 'copy', text: 'Skopiuj słowo i wklej je do pola obok.', left: 'komputer', word: 'komputer', answer: true },
+        { kind: 'cut', text: 'Wytnij słowo i wklej je do pola obok.', left: 'klawiatura', word: 'klawiatura', answer: true },
+        { kind: 'clear', text: 'Zaznacz cały tekst i usuń go.', left: 'Ten tekst jest bardzo długi i usuwanie go literka po literce trwałoby wieki. Zaznacz go cały naraz i usuń jednym klawiszem!', answer: true },
+        { kind: 'tab', text: 'Przejdź do pola obok i wpisz Mam', left: 'Kliknij tutaj', word: 'Mam', answer: true }
+      ]
+    }
+  ]
+};
+
 // Zadanie „Dokumenty tekstowe”: karta ulubionego sportowca, artysty lub zespołu
 // w edytorze tekstu (zdjęcie z opisem obok, lista pod spodem). Zalicza kod nauczyciela.
 const idolCardTask = {
@@ -276,8 +437,9 @@ const idolCardTask = {
   id: 'dokumenty-tekstowe/zadanie-moj-idol',
   title: 'Dokumenty tekstowe',
   prompt: 'Mój idol — karta w dokumencie',
-  hint: 'Pracuj w Dokumentach Google albo w LibreOffice Writer. Jeden krok naraz — zrobione? Kliknij numer. Nie wiesz jak? Kliknij pomarańczowy „?”. Tak ma wyglądać Twoja strona:',
-  doneHint: 'Twoja karta idola ma zdjęcie, opis i listę sukcesów.',
+  hint: 'Zrób stronę jak na obrazku. Gotowe? Pokaż ją nauczycielowi i wpisz kod.',
+  intro: '🌟 Opisz <b>swojego idola</b> — piłkarza, aktora, malarza… w <b>Dokumentach Google</b> albo <b>Writerze</b>. Na górze jego <b>imię</b>, obok <b>zdjęcia</b> 3 zdania o nim, pod spodem <b>3 sukcesy</b>. Zapisz jako <b>Mój idol</b>.',
+  doneHint: 'Brawo! Masz zdjęcie, opis i listę. 🎉',
   reward: 30,
   tone: 'orange',
   layout: `
@@ -290,96 +452,34 @@ const idolCardTask = {
       <ol class="ct-layout-list"><li><span></span></li><li><span></span></li><li><span></span></li></ol>
       <small class="ct-layout-note">lista: medale, filmy, płyty, piosenki…</small>
     </div>`,
-  steps: [
-    {
-      icon: '🤔',
-      text: 'Wybierz <b>jedną osobę</b> albo <b>jeden zespół</b>.',
-      help: '<p>Sportowiec, piosenkarka, aktor, youtuber, zespół — kogo lubisz najbardziej?</p><p>Nie myśl za długo. <b>Wybierz i idź dalej.</b></p>'
-    },
-    {
-      icon: '📝',
-      text: 'Otwórz <b>Dokumenty Google</b> albo <b>LibreOffice Writer</b>.',
-      help: twoAppsHelp(
-        ['Wejdź na <b>docs.google.com</b>.', 'Kliknij <b>Pusty dokument</b> (duży „+”).'],
-        ['Kliknij <b>Start</b>.', 'Wpisz <b>Writer</b> i wciśnij <kbd>Enter</kbd>.']
-      )
-    },
-    {
-      icon: '⭐',
-      text: 'Wpisz na górze <b>imię idola</b> albo <b>nazwę zespołu</b>.',
-      help: '<p>To będzie <b>tytuł</b>. Na razie tylko go wpisz.</p><p>Potem wciśnij <kbd>Enter</kbd>, żeby zejść linijkę niżej.</p>'
-    },
-    {
-      icon: '🎨',
-      text: 'Zrób tytuł <b>duży</b>, <b>pogrubiony</b> i <b>na środku</b>.',
-      help: '<ol><li>Zaznacz tytuł myszką.</li><li>Ustaw rozmiar <b>24</b>.</li><li>Kliknij <b>B</b> albo <kbd>Ctrl</kbd> + <kbd>B</kbd>.</li><li>Kliknij <b>wyśrodkuj</b> albo <kbd>Ctrl</kbd> + <kbd>E</kbd>.</li></ol>'
-    },
-    {
-      icon: '🔍',
-      text: 'Znajdź w internecie <b>zdjęcie</b> idola.',
-      help: '<ol><li>Otwórz nową kartę: <kbd>Ctrl</kbd> + <kbd>T</kbd>.</li><li>Wpisz imię idola.</li><li>Kliknij <b>Grafika</b>.</li><li>Kliknij zdjęcie <b>prawym</b> przyciskiem → <b>Kopiuj obraz</b>.</li></ol>'
-    },
-    {
-      icon: '🖼️',
-      text: '<b>Wklej</b> zdjęcie pod tytułem.',
-      help: '<ol><li>Wróć do dokumentu.</li><li>Kliknij pod tytułem.</li><li>Wciśnij <kbd>Ctrl</kbd> + <kbd>V</kbd>.</li><li>Za duże? Złap za <b>róg</b> zdjęcia i zmniejsz.</li></ol>'
-    },
-    {
-      icon: '↔️',
-      text: 'Ustaw zdjęcie <b>po lewej</b>, żeby tekst mieścił się <b>obok</b>.',
-      help: twoAppsHelp(
-        ['Kliknij zdjęcie.', 'Pod nim kliknij <b>Zawijaj tekst</b>.', 'Przesuń zdjęcie do <b>lewej</b> krawędzi.'],
-        ['Kliknij zdjęcie <b>prawym</b> przyciskiem.', 'Wybierz <b>Zawijanie → Zawijanie strony</b>.', 'Przesuń zdjęcie do <b>lewej</b> krawędzi.']
-      )
-    },
-    {
-      icon: '✍️',
-      text: 'Obok zdjęcia napisz <b>2–3 zdania</b> o idolu (ok. <b>200 znaków</b>).',
-      help: '<p>Odpowiedz krótko na 3 pytania:</p><ol><li><b>Kim</b> jest?</li><li><b>Co</b> robi?</li><li><b>Dlaczego</b> go lubisz?</li></ol>' + twoAppsHelp(
-        ['Ile znaków? <b>Narzędzia → Liczba słów</b>.'],
-        ['Ile znaków? Spójrz na <b>pasek na dole</b> okna.']
-      )
-    },
-    {
-      icon: '📋',
-      text: 'Pod zdjęciem zrób <b>listę</b> — co najmniej <b>3</b> punkty.',
-      help: '<p>Wpisz np. <b>medale i puchary</b>, <b>filmy</b> albo <b>piosenki i płyty</b>. Każdy punkt kończ <kbd>Enter</kbd>.</p>' + twoAppsHelp(
-        ['Lista 1. 2. 3.: <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>7</kbd>', 'Lista z kropkami: <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>8</kbd>'],
-        ['Lista 1. 2. 3.: <kbd>F12</kbd>', 'Lista z kropkami: <kbd>Shift</kbd> + <kbd>F12</kbd>']
-      )
-    },
-    {
-      icon: '💾',
-      text: 'Nazwij dokument <b>Mój idol</b> i zapisz.',
-      help: twoAppsHelp(
-        ['Kliknij w lewym górnym rogu <b>Dokument bez tytułu</b>.', 'Wpisz <b>Mój idol</b>. Google zapisuje sam.'],
-        ['Wciśnij <kbd>Ctrl</kbd> + <kbd>S</kbd>.', 'Wybierz <b>Pulpit</b>, wpisz <b>Mój idol</b>, kliknij <b>Zapisz</b>.']
-      )
-    },
-    {
-      icon: '🙋',
-      text: '<b>Pokaż</b> dokument nauczycielowi i weź <b>kod</b>.',
-      help: '<p>Podnieś rękę. Nauczyciel sprawdzi: <b>tytuł</b>, <b>zdjęcie</b>, <b>opis obok</b>, <b>listę pod spodem</b>.</p><p>Wpisz kod w pole poniżej.</p>'
-    }
-  ]
+  steps: []
 };
 
 // Zadania „Grafika komputerowa”: w hint co stworzyć i w czym, w steps kryteria zaliczenia,
 // które uczeń odhacza, a nauczyciel sprawdza. Zalicza kod nauczyciela.
 const PHOTOPEA_LINK = '<a href="https://www.photopea.com" target="_blank" rel="noopener">Photopea</a>';
 
+// Kolorowanka jak na kolorujonline.pl: obrazki SVG w assets/coloring, każde pole to kształt z klasą „c”.
+// Nowy obrazek z PNG: wrzuć <id>.png do assets/coloring i uruchom node tools/png-do-kolorowanki.mjs.
 const coloringTask = {
-  type: 'task',
+  type: 'coloring',
   id: 'grafika-komputerowa/zadanie-kolorowanka',
   title: 'Grafika komputerowa',
   prompt: 'Pokoloruj obrazek online',
-  hint: '<b>Stwórz:</b> kolorowy obrazek.<br><b>W czym:</b> <a href="https://kolorujonline.pl" target="_blank" rel="noopener">kolorujonline.pl</a>',
-  doneHint: 'Twój obrazek jest kolorowy i nauczyciel go widział.',
+  doneHint: 'Obrazek jest cały kolorowy. Możesz go pobrać jako PNG.',
   reward: 30,
-  steps: [
-    { icon: '🖼️', text: 'Obrazek jest <b>cały pokolorowany</b> — nie ma białych pól.' },
-    { icon: '🎨', text: 'Użyłeś co najmniej <b>5 różnych kolorów</b>.' },
-    { icon: '🌈', text: 'Kolory <b>pasują</b> do rzeczy na obrazku (np. trawa zielona, niebo niebieskie).' }
+  minColors: 5,
+  pages: [
+    { id: 'smok', label: 'Smok i zamek', src: 'assets/coloring/smok.svg' },
+    { id: 'rakieta', label: 'Kosmonauta i rakieta', src: 'assets/coloring/rakieta.svg' },
+    { id: 'akwarium', label: 'Podwodny świat', src: 'assets/coloring/akwarium.svg' },
+    { id: 'lama', label: 'Lama z balonami', src: 'assets/coloring/lama.svg' },
+    { id: 'pinata', label: 'Lama-piniata', src: 'assets/coloring/pinata.svg' },
+    { id: 'klocki', label: 'Świat z klocków', src: 'assets/coloring/klocki.svg' },
+    { id: 'kolarstwo', label: 'Wyścig kolarski', src: 'assets/coloring/kolarstwo.svg' },
+    { id: 'wisla', label: 'Mecz Białej Gwiazdy', src: 'assets/coloring/wisla.svg' },
+    { id: 'stworki', label: 'Wyprawa ze stworkami', src: 'assets/coloring/stworki.svg' },
+    { id: 'aniimo', label: 'Przygoda z Aniimo', src: 'assets/coloring/aniimo.svg' }
   ]
 };
 
@@ -388,7 +488,10 @@ const avatarTask = {
   id: 'grafika-komputerowa/zadanie-awatar',
   title: 'Grafika komputerowa',
   prompt: 'Awatar na koncie Windows',
-  hint: '<b>Stwórz:</b> swój awatar i ustaw go jako zdjęcie konta w Windows.<br><b>W czym:</b> <a href="https://avatarmaker.com" target="_blank" rel="noopener">avatarmaker.com</a> + Ustawienia Windows',
+  tone: 'blue',
+  intro: '<b>Stwórz</b> swój awatar i ustaw go jako <b>zdjęcie konta</b> w Windows.',
+  layout: '<img class="ct-art" src="assets/task-art/avatarmaker.png" width="1033" height="525" alt="Kreator awatarów Avatar Maker: twarz postaci i wybór części do zmiany" />',
+  link: { href: 'https://avatarmaker.com', label: 'Rozpocznij' },
   doneHint: 'Twój awatar jest na koncie Windows i nauczyciel go widział.',
   reward: 30,
   steps: [
@@ -398,7 +501,8 @@ const avatarTask = {
       icon: '🪟',
       text: 'Awatar jest <b>zdjęciem konta</b> — widać go w menu <b>Start</b>.',
       help: '<p><b>Ustawienia</b> (<kbd>Win</kbd> + <kbd>I</kbd>) → <b>Konta</b> → <b>Twoje informacje</b>.</p>'
-    }
+    },
+    { icon: '🙋', text: '<b>Pochwal się</b> nauczycielowi.' }
   ]
 };
 
@@ -407,10 +511,11 @@ const robotDrawingTask = {
   id: 'grafika-komputerowa/zadanie-robot',
   title: 'Grafika komputerowa',
   prompt: 'Narysuj robota-pomocnika',
-  hint: `<b>Stwórz:</b> rysunek robota, który Ci w czymś pomaga.<br><b>W czym:</b> Paint albo ${PHOTOPEA_LINK}`,
+  tone: 'orange',
+  intro: '<b>Stwórz</b> rysunek <b>robota</b>, który Ci w czymś <b>pomaga</b>.',
+  layout: '<img class="ct-art" src="assets/task-art/paint-photopea.png" alt="Ekran programu Paint przełamany po skosie z ekranem Photopea" />',
   doneHint: 'Twój robot ma kształty, kolory, imię i jest zapisany jako PNG.',
   reward: 30,
-  tone: 'orange',
   steps: [
     { icon: '⬜', text: 'Robot jest zbudowany z <b>kształtów</b>: <b>prostokątów</b>, <b>kół</b> i <b>linii</b>.' },
     { icon: '🦾', text: 'Robot ma <b>głowę</b>, <b>tułów</b>, <b>ręce</b> i <b>nogi</b>.' },
@@ -427,6 +532,7 @@ const invitationCardTask = {
   title: 'Grafika komputerowa',
   prompt: 'Kartka z zaproszeniem',
   hint: `<b>Stwórz:</b> kartkę z zaproszeniem na <b>przedstawienie z okazji Dnia Rodziny</b> albo <b>szkolne rozgrywki sportowe</b>.<br><b>W czym:</b> Paint albo ${PHOTOPEA_LINK}`,
+  layout: '<img class="ct-art" src="assets/task-art/paint-photopea-zaproszenie.png" alt="Kartka z zaproszeniem w programie Paint przełamanym po skosie z Photopea" />',
   doneHint: 'Twoja kartka spełnia wszystkie warunki i nauczyciel ją widział.',
   reward: 30,
   tone: 'orange',
@@ -445,7 +551,18 @@ const animationTask = {
   id: 'grafika-komputerowa/zadanie-animacja',
   title: 'Grafika komputerowa',
   prompt: 'Stwórz własną animację',
-  hint: '<b>Stwórz:</b> animację według własnego pomysłu.<br><b>W czym:</b> <a href="https://brush.ninja/create/animation-maker/" target="_blank" rel="noopener">Brush Ninja</a> albo Pivot Animator',
+  tone: 'orange',
+  intro: '<b>Stwórz:</b> animację według własnego pomysłu.',
+  layout: `<div class="ct-apps">
+    <figure class="ct-app">
+      <img class="ct-app-art" src="assets/task-art/brush-ninja.png" width="640" height="556" alt="Edytor animacji Brush Ninja: płótno, pędzle, kolory i klatki" />
+      <a class="primary-button" href="https://brush.ninja/create/animation-maker/" target="_blank" rel="noopener">Stwórz animację <span aria-hidden="true">↗</span></a>
+    </figure>
+    <figure class="ct-app">
+      <img class="ct-app-art" src="assets/task-art/pivot-animator.png" width="640" height="400" alt="Program Pivot Animator: ludzik z łukiem i pasek klatek" />
+      <button class="primary-button" type="button" data-pivot-open>Stwórz animację</button>
+    </figure>
+  </div>`,
   doneHint: 'Twoja animacja się rusza i nauczyciel ją widział.',
   reward: 30,
   steps: [
@@ -475,7 +592,8 @@ const frozenTask = {
   id: 'programowanie/zadanie-kraina-lodu',
   title: 'Programowanie',
   prompt: 'Kraina Lodu — zagadki z Elzą',
-  hint: 'Wejdź na stronę <a href="https://studio.code.org/pl/courses/frozen/units/1/lessons/1/levels/1" target="_blank" rel="noopener">code.org — Kraina Lodu</a> i rozwiąż <b>10 zagadek</b> z Elzą.',
+  hint: 'Wejdź na stronę <a href="https://studio.code.org/pl/courses/frozen/units/1/lessons/1/levels/2" target="_blank" rel="noopener">code.org — Kraina Lodu</a> i rozwiąż <b>10 zagadek</b> z Elzą.',
+  link: { href: 'https://studio.code.org/pl/courses/frozen/units/1/lessons/1/levels/2', label: 'Rozpocznij' },
   doneHint: 'Rozwiązałeś 10 zagadek z Elzą.',
   reward: 30,
   layout: '<img class="ct-art" src="assets/task-art/frozen-elza.png" width="400" height="410" alt="Elza ślizga się po lodzie i rysuje linie" />',
@@ -488,7 +606,8 @@ const hourOfCodeTask = {
   id: 'programowanie/zadanie-godzina-kodowania',
   title: 'Programowanie',
   prompt: 'Godzina Kodowania — zagadki',
-  hint: 'Wejdź na stronę <a href="https://studio.code.org/pl/hoc/1" target="_blank" rel="noopener">code.org — Godzina Kodowania</a> i rozwiąż <b>10 zagadek</b>.',
+  hint: 'Wejdź na stronę <a href="https://studio.code.org/pl/hoc/2" target="_blank" rel="noopener">code.org — Godzina Kodowania</a> i rozwiąż <b>10 zagadek</b>.',
+  link: { href: 'https://studio.code.org/pl/hoc/2', label: 'Rozpocznij' },
   doneHint: 'Rozwiązałeś 10 zagadek z Godziny Kodowania.',
   reward: 30,
   layout: '<img class="ct-art" src="assets/task-art/hoc-angry-birds.png" width="402" height="406" alt="Labirynt z czerwonym ptakiem Angry Birds i zieloną świnką" />',
@@ -526,10 +645,15 @@ const balloonPopGame = {
 };
 
 // Gra „Sieć komputerowa”: plansza-labirynt, po lewej Internet, po prawej komputer.
-// Mapa: # ściana, . podłoga, I gniazdko Internetu, M modem, K komputer, C i D kolejne komputery, L komputer z Wi-Fi, P drukarka.
+// Mapa: # ściana, . podłoga, I i J gniazdka Internetu, M modem, K komputer, C–G kolejne komputery, L komputer z Wi-Fi,
+// P, Q, R drukarki.
 // tags — numerki na urządzeniach, gdy na planszy jest kilka komputerów (np. { K: '1', C: '2' }).
+// rooms — podpisy sal nad planszą (from, to — numery kolumn).
+// Cele: internet / offline (device), link (każde z a widzi każde z b), isolated (żadne z a nie widzi żadnego z b, nie licząc VPN).
+// device, a i b mogą być listą urządzeń. alert — komunikat, gdy reguła zostanie złamana.
 // cables — kable ułożone na starcie między sąsiednimi urządzeniami (nie da się ich odłączyć).
-// tools — sprzęt do postawienia (modem, router, ap) i wzmocnienia do slotów (wifi — karta Wi-Fi, apModule — moduł access point do routera).
+// tools — sprzęt do postawienia (modem, router, ap) i wzmocnienia do slotów (wifi — karta Wi-Fi, apModule — moduł access point do routera,
+// vpn — usługa VPN do komputera: komputery z nią łączy tunel (linia przerywana); działa, gdy oba mają internet).
 // fact — ciekawostka „Czy wiesz?” pokazywana po przejściu poziomu.
 // Wi-Fi: siła = 1 − odległość / range − ściany × wallLoss; urządzenie łączy się, gdy siła > 0.
 const networkBuildGame = {
@@ -679,21 +803,30 @@ const networkBuildGame = {
       ]
     },
     {
-      title: 'Gruby mur',
-      hint: 'Laptop siedzi w zamkniętym pokoju. Z korytarza na górze sygnał musi przejść przez dwie ściany i nie doleci. Zanieś access point kablem tam, gdzie od laptopa dzieli go tylko jedna ściana.',
-      fact: 'Wi-Fi najbardziej osłabiają beton, metal i… woda! Akwarium albo lodówka między routerem a komputerem też psują sygnał.',
-      tools: { router: 1, ap: 1 },
+      title: 'Dwie sale i tunel VPN',
+      hint: 'Każda sala ma swoje gniazdko internetu. Sala A: komputery 1–3 i drukarka A. Sala B: komputery 4–6 i drukarki B. Sale nie mogą się widzieć — ani kablem, ani przez Wi-Fi. Włóż usługę VPN do komputerów 3 i 6 — połączy je tunel (linia przerywana). Tunel biegnie przez internet, więc oba komputery muszą mieć internet. Router ma tylko 4 boki na kable.',
+      fact: 'VPN (wirtualna sieć prywatna) to bezpieczny tunel przez internet. Dzięki niemu komputer w innym budynku działa tak, jakby stał w tej samej sieci lokalnej — np. w szkole albo w firmie.',
+      tools: { router: 2, modemModule: 1, apModule: 2, wifi: 3, vpn: 2 },
       cables: [['I', 'M']],
-      goals: [{ kind: 'internet', device: 'L', label: 'Laptop ma internet' }],
+      tags: { K: '1', C: '2', D: '3', E: '4', F: '5', G: '6', P: 'A', Q: 'B', R: 'B' },
+      rooms: [{ label: 'Sala A', from: 0, to: 5 }, { label: 'Sala B', from: 7, to: 13 }],
+      goals: [
+        { kind: 'internet', device: ['K', 'C', 'D'], label: 'Komputery 1, 2 i 3 mają internet' },
+        { kind: 'link', a: ['K', 'C', 'D'], b: 'P', label: 'Sala A drukuje na drukarce A' },
+        { kind: 'link', a: ['E', 'F', 'G'], b: ['Q', 'R'], label: 'Sala B drukuje na drukarkach B' },
+        { kind: 'link', a: 'D', b: 'G', label: 'Komputery 3 i 6 są w jednej sieci' },
+        { kind: 'isolated', a: ['K', 'C', 'D', 'P'], b: ['E', 'F', 'G', 'Q', 'R'], label: 'Sale A i B NIE mogą się widzieć (poza VPN)', alert: 'Ups! Sale A i B się połączyły.' }
+      ],
       map: [
-        'IM..........',
-        '##.#........',
-        '#..#########',
-        '#.#....#####',
-        '#.#.##.#.#.#',
-        '#...#....#L#',
-        '###.##.#.#.#',
-        '##.....#####'
+        'IM....#.J....E',
+        '.#..#.#.#.#...',
+        'K.....#.......',
+        '#..#..#.#..#.F',
+        '......#.......',
+        '.#..#.#.#.....',
+        'C...P.#.....R.',
+        '.#.#..#.#.....',
+        '.....D#G..Q...'
       ]
     },
     {
@@ -866,6 +999,7 @@ const searchTriviaQuiz = {
       type: 'choices',
       layout: 'abcd',
       label: 'A',
+      rewardGif: 'assets/reward-gifs/bird-cute.gif',
       prompt: 'Znajdź odpowiedź w internecie',
       hint: 'Poziom: łatwy ⭐ · To dwa pytania w jednym. Wyszukaj każde zwierzę osobno, a potem dodaj wyniki.',
       art: {
@@ -893,6 +1027,7 @@ const searchTriviaQuiz = {
       type: 'choices',
       layout: 'abcd',
       label: 'B',
+      rewardGif: 'assets/reward-gifs/spongebob.gif',
       prompt: 'Znajdź odpowiedź w internecie',
       hint: 'Poziom: łatwy ⭐ · Najpierw sprawdź, gdzie jest ten wodospad. Potem znajdź stolicę tego kraju.',
       art: {
@@ -920,6 +1055,7 @@ const searchTriviaQuiz = {
       type: 'choices',
       layout: 'abcd',
       label: 'C',
+      rewardGif: 'assets/reward-gifs/dance-hamster.gif',
       prompt: 'Znajdź odpowiedź w internecie',
       hint: 'Poziom: średni ⭐⭐ · Znajdź datę startu każdego z tych statków i policz, ile dni minęło.',
       art: {
@@ -947,6 +1083,7 @@ const searchTriviaQuiz = {
       type: 'choices',
       layout: 'abcd',
       label: 'D',
+      rewardGif: 'assets/reward-gifs/jaw-drop-bullet.gif',
       prompt: 'Znajdź odpowiedź w internecie',
       hint: 'Poziom: średni ⭐⭐ · Potrzebujesz dwóch wysokości. Znajdź obie i odejmij.',
       art: {
@@ -974,6 +1111,7 @@ const searchTriviaQuiz = {
       type: 'choices',
       layout: 'abcd',
       label: 'E',
+      rewardGif: 'assets/reward-gifs/shia-labeouf-clapping.gif',
       prompt: 'Znajdź odpowiedź w internecie',
       hint: 'Poziom: trudny ⭐⭐⭐ · Kliknij portret prawym przyciskiem myszy i wybierz „Wyszukaj obraz w Google”. Gdy już wiesz, kto to, znajdź dwie daty i policz.',
       art: {
@@ -1002,6 +1140,7 @@ const searchTriviaQuiz = {
       type: 'choices',
       layout: 'abcd',
       label: 'F',
+      rewardGif: 'assets/reward-gifs/ufc.gif',
       prompt: 'Znajdź odpowiedź w internecie',
       hint: 'Poziom: trudny ⭐⭐⭐ · Najpierw dowiedz się, kim jest kobieta ze zdjęcia. Sposób wybierz sam!',
       art: {
@@ -1037,6 +1176,7 @@ const searchDetectiveQuiz = {
       type: 'choices',
       layout: 'abcd',
       label: 'A',
+      rewardGif: 'assets/reward-gifs/spongebob-meme.gif',
       prompt: 'Znajdź miejsce ze zdjęcia',
       hint: 'Poziom: łatwy ⭐ · Poszukaj na zdjęciu nazwy ulicy i adresu. Znajdź to miejsce w Mapach Google, kliknij je prawym przyciskiem myszy — współrzędne pojawią się na górze menu.',
       art: {
@@ -1065,6 +1205,7 @@ const searchDetectiveQuiz = {
       type: 'choices',
       layout: 'abcd',
       label: 'B',
+      rewardGif: 'assets/reward-gifs/kamil.gif',
       prompt: 'Znajdź książkę w bibliotece',
       hint: 'Poziom: średni ⭐⭐ · Wejdź do katalogu Biblioteki Kraków: krakow-biblioteka.sowa.pl. Wpisz tytuł i rozwiń informację o tym, które filie mają książkę. Inne katalogi: katalog.nukat.edu.pl (biblioteki naukowe) i katalogi.bn.org.pl (Biblioteka Narodowa).',
       art: {
@@ -1092,6 +1233,7 @@ const searchDetectiveQuiz = {
       type: 'choices',
       layout: 'abcd',
       label: 'C',
+      rewardGif: 'assets/reward-gifs/spongebob-dancing.gif',
       prompt: 'Znajdź najbliższe schronienie',
       hint: 'Poziom: średni ⭐⭐ · Wejdź na stronę gdziesieukryc.pl. Na mapie znajdź naszą szkołę i sprawdź, który punkt schronienia jest najbliżej.',
       art: {
@@ -1119,6 +1261,7 @@ const searchDetectiveQuiz = {
       type: 'choices',
       layout: 'abcd',
       label: 'D',
+      rewardGif: 'assets/reward-gifs/cat-dance-cat.gif',
       prompt: 'Znajdź badanie naukowe',
       hint: 'Poziom: trudny ⭐⭐⭐ · Wejdź na scholar.google.com. Zwykłe Google szuka wszystkich stron w internecie, a Google Scholar tylko prac naukowych: artykułów, książek i prac dyplomowych. Badanie jest po angielsku — skopiuj jego fragment do translate.google.com, a tłumacz zamieni go na polski.',
       tip: {
