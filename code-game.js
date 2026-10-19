@@ -552,8 +552,8 @@ function cgCompile(source, level = {}) {
 // obok z prawej, swap() zamienia je miejscami, choose() wybiera skrzynkę pod robotem.
 // level.boxes — tablica liczb albo { max, sorted }: losowe różne liczby od 1 do max.
 // level.sign = { box: true } — tabliczka pokazuje liczbę z jednej ze skrzynek.
-// level.goal — 'sorted' (od najmniejszej), 'maxLast' (największa na końcu), 'min' (wybierz najmniejszą),
-// 'sign' (wybierz liczbę z tabliczki). level.hidden — skrzynki są zamknięte, value() otwiera je
+// level.goal — 'sorted' (od najmniejszej), 'maxLast' (największa na końcu), 'minFirst' (najmniejsza na początku),
+// 'min' (wybierz najmniejszą), 'sign' (wybierz liczbę z tabliczki). level.hidden — skrzynki są zamknięte, value() otwiera je
 // (najwyżej level.maxOpen). level.maxMoves — najwięcej kroków robota, level.wave — na polach widać
 // odległość od startu. setup = { sign, boxes } ustala liczby (testy, ponowne uruchomienie), inaczej są losowe.
 
@@ -613,6 +613,7 @@ function cgMakeBoxes(level, count, random, fresh) {
 function cgBoxGoalDone(goal, values) {
   if (goal === 'sorted') return values.every((value, i) => !i || values[i - 1] < value);
   if (goal === 'maxLast') return values[values.length - 1] === Math.max(...values);
+  if (goal === 'minFirst') return values[0] === Math.min(...values);
   return false;
 }
 
@@ -1033,6 +1034,7 @@ function cgGoalMessage(world, level = {}) {
   if (world.boxes && level.goal && !cgGoalReached(world, level)) {
     if (level.goal === 'sorted') return 'Program się skończył, ale skrzynki nie są jeszcze ułożone od najmniejszej do największej.';
     if (level.goal === 'maxLast') return 'Program się skończył, ale największa liczba nie jest na końcu rzędu.';
+    if (level.goal === 'minFirst') return 'Program się skończył, ale najmniejsza liczba nie jest na początku rzędu.';
     return 'Program się skończył, a robot nie wybrał skrzynki. Stań nad właściwą i napisz choose()';
   }
   if (world.treasure && !world.treasure.dug) return 'Program się skończył, ale skarb 💰 jest nadal zakopany. Wykop go: dig()';
@@ -1247,7 +1249,7 @@ function startCodeLevel(topic, index, game, levelIndex) {
         </div>
       </section>
     </div>
-    <div class="fg-overlay" hidden><div class="fg-overlay-card"></div></div>
+    <div class="fg-overlay is-screen" hidden><div class="fg-overlay-card"></div></div>
   `;
 
   const state = {
@@ -1514,6 +1516,7 @@ function cgRenderItems(state) {
 const CG_BOX_GOALS = {
   sorted: 'Ułóż skrzynki od najmniejszej do największej 📦',
   maxLast: 'Przesuń największą liczbę na koniec rzędu 📦',
+  minFirst: 'Przesuń najmniejszą liczbę na początek rzędu 📦',
   min: 'Wybierz skrzynkę z najmniejszą liczbą 📦',
   sign: 'Wybierz skrzynkę z liczbą z tabliczki 🪧'
 };

@@ -1,10 +1,9 @@
 // Zadanie „Kolorowanka online”: uczeń wybiera obrazek SVG i koloruje go jak na kolorujonline.pl.
 // Każde pole obrazka to osobny kształt z klasą „c”. Narzędzia: wiaderko (wypełnia pole), gumka,
 // pędzel (maluje swobodnie) i magiczny pędzel (maluje tylko w polu, w którym zaczęto ruch).
-// Bez wymogów: „Gotowe” zalicza obrazek pokolorowany dowolnie. Pola z data-optional
+// Bez wymogów: zadanie zalicza się samo po pokolorowaniu pierwszego pola. Pola z data-optional
 // (drobne kawałki obrazków z tools/png-do-kolorowanki.mjs) nie liczą się do paska postępu.
-// Korzysta z funkcji app.js (setQuizProgress, completeLesson, saveStudentPoints…)
-// i z burstFileGameConfetti z file-game.js.
+// Korzysta z funkcji app.js (setQuizProgress, completeLesson, saveStudentPoints…).
 let coloringGame = null;
 
 // Obrazek wczytujemy dopiero po wyborze: assets/coloring/<id>.js dopisuje się do COLORING_SVGS
@@ -100,24 +99,26 @@ function startColoringGame(topic, index, game, page) {
               <span aria-hidden="true">${tool.icon}</span><small>${tool.label}</small>
             </button>`).join('')}
         </div>
-        <p class="cg-panel-title">Kolory:</p>
+        <p class="cg-panel-title">Kolor: <span class="cg-current" aria-hidden="true"></span></p>
         <div class="cg-palette" role="radiogroup" aria-label="Kolory">
           ${COLORING_PALETTE.map((color) => `
-            <button class="cg-swatch" type="button" role="radio" aria-checked="false" data-color="${color}" style="--swatch: ${color}" aria-label="Kolor ${color}"></button>`).join('')}
+            <button class="cg-swatch" type="button" role="radio" aria-checked="false" data-color="${color}" style="--swatch: ${color}" aria-label="${color === COLORING_BLANK ? 'Biały' : `Kolor ${color}`}" title="${color === COLORING_BLANK ? 'Biały' : ''}"></button>`).join('')}
           <label class="cg-custom" title="Własny kolor">
             <input type="color" value="#00bfa5" aria-label="Własny kolor" />
           </label>
         </div>
-        <label class="cg-panel-title" for="cg-size">Rozmiar pędzla:</label>
-        <div class="cg-size">
-          <input id="cg-size" type="range" min="4" max="48" step="2" value="14" />
-          <span class="cg-size-dot" aria-hidden="true"></span>
+        <div class="cg-size-block">
+          <label class="cg-panel-title" for="cg-size">Rozmiar pędzla:</label>
+          <div class="cg-size">
+            <input id="cg-size" type="range" min="4" max="48" step="2" value="14" />
+            <span class="cg-size-dot" aria-hidden="true"></span>
+          </div>
         </div>
         <div class="cg-grid cg-actions">
           <button class="cg-action" type="button" data-action="undo" title="Cofnij" disabled><span aria-hidden="true">↶</span><small>Cofnij</small></button>
           <button class="cg-action" type="button" data-action="redo" title="Przywróć" disabled><span aria-hidden="true">↷</span><small>Przywróć</small></button>
-          <button class="cg-action" type="button" data-action="download" title="Zapisz"><span aria-hidden="true">💾</span><small>Zapisz</small></button>
-          <button class="cg-action" type="button" data-action="reset" title="Od nowa"><span aria-hidden="true">🔄</span><small>Od nowa</small></button>
+          <button class="cg-action" type="button" data-action="download" title="Pobierz obrazek jako PNG"><span aria-hidden="true">📥</span><small>Pobierz</small></button>
+          <button class="cg-action" type="button" data-action="reset" title="Wymaż cały obrazek"><span aria-hidden="true">🗑️</span><small>Wymaż</small></button>
         </div>
       </aside>
     </div>
@@ -200,6 +201,7 @@ function selectColoringColor(color) {
   const custom = state.body.querySelector('.cg-custom');
   custom.classList.toggle('is-active', !COLORING_PALETTE.includes(state.color));
   custom.style.setProperty('--swatch', state.color);
+  state.body.querySelector('.cg-current').style.setProperty('--swatch', state.color);
   if (state.tool === 'erase') selectColoringTool('fill');
   updateColoringSizeDot();
   updateColoringCursor();
@@ -214,6 +216,9 @@ function selectColoringTool(tool) {
     button.setAttribute('aria-pressed', String(active));
   });
   state.board.dataset.tool = tool;
+  const brush = tool === 'brush' || tool === 'magic';
+  state.body.querySelector('.cg-size-block').classList.toggle('is-disabled', !brush);
+  state.body.querySelector('#cg-size').disabled = !brush;
   updateColoringCursor();
 }
 
@@ -390,6 +395,7 @@ function resetColoring() {
     .filter((region) => regionColor(region) !== COLORING_BLANK)
     .map((region) => [region, regionColor(region), COLORING_BLANK]);
   if (!fills.length && !state.strokes.length) return;
+  if (!confirm('Wymazać cały obrazek? Możesz to potem cofnąć.')) return;
   const before = [...state.strokes];
   fills.forEach(([region]) => region.setAttribute('fill', COLORING_BLANK));
   state.strokes = [];
@@ -439,23 +445,12 @@ function blankColoringRegions() {
     !region.hasAttribute('data-optional') && regionColor(region) === COLORING_BLANK && !painted.has(regionIndex));
 }
 
-function coloringStats() {
-  const state = coloringGame;
-  const painted = new Set(state.strokes.map((stroke) => stroke.region));
-  const fills = state.regions.map(regionColor);
-  const colors = [...fills, ...state.strokes.map((stroke) => stroke.color)];
-  return {
-    blank: blankColoringRegions().length,
-    colored: fills.filter((color, regionIndex) => color !== COLORING_BLANK || painted.has(regionIndex)).length,
-    used: new Set(colors.filter((color) => color !== COLORING_BLANK)).size
-  };
-}
-
 function updateColoringStatus() {
   const state = coloringGame;
-  const { blank } = coloringStats();
+  const blank = blankColoringRegions().length;
   const total = state.regions.filter((region) => !region.hasAttribute('data-optional')).length || 1;
   setQuizProgress((total - blank) / total);
+  if (blank < total || state.strokes.length) awardColoring();
   state.body.querySelector('[data-action="undo"]').disabled = !state.undoStack.length;
   state.body.querySelector('[data-action="redo"]').disabled = !state.redoStack.length;
 }
@@ -524,41 +519,17 @@ function downloadColoring() {
   image.src = url;
 }
 
-function finishColoringGame() {
+// Pierwsze pokolorowane pole zalicza zadanie — bez przerywania malowania.
+function awardColoring() {
   const state = coloringGame;
-  const { topic, index, game, svg } = state;
-  const { used, colored } = coloringStats();
-  burstFileGameConfetti(svg.getBoundingClientRect(), topic.accent);
-
+  const { topic, index, game } = state;
+  if (getCompletedLessons(topic).has(index)) return;
   const earned = Math.max(0, game.reward - readQuizBest(game.id));
   if (earned) {
     saveQuizBest(game.id, game.reward);
     saveStudentPoints(readStudentPoints() + earned);
   }
   completeLesson(topic, index);
-
-  setQuizProgress(1);
-  app.querySelector('#quiz-prompt').textContent = 'Brawo, obrazek pokolorowany!';
-  app.querySelector('#quiz-hint').textContent = game.doneHint;
-
-  const body = app.querySelector('#quiz-body');
-  body.className = 'quiz-body quiz-summary cg-summary';
-  body.innerHTML = `
-    <div class="cg-board cg-board-done"></div>
-    <div class="summary-stats">
-      <div><strong>${used}</strong><span>użytych kolorów</span></div>
-      <div><strong>${colored}</strong><span>pokolorowanych pól</span></div>
-      <div><strong>+${formatPoints(earned)}</strong><span>nowych punktów</span></div>
-    </div>
-    <div class="summary-actions">
-      <button class="secondary-button cg-download" type="button">💾 Zapisz obrazek</button>
-      <button class="secondary-button quiz-retry" type="button">Pokoloruj inny</button>
-      <a class="primary-button quiz-finish" href="#/sciezka/${topic.slug}">Wróć do ścieżki <span aria-hidden="true">→</span></a>
-    </div>
-  `;
-  body.querySelector('.cg-board').append(svg);
-  body.querySelector('.cg-download').addEventListener('click', downloadColoring);
-  body.querySelector('.quiz-retry').addEventListener('click', () => renderColoringGame(topic, index, game));
   syncStudentProfile();
-  window.scrollTo({ top: 0, behavior: 'instant' });
+  if (earned) app.querySelector('#quiz-hint').textContent = `Brawo, zadanie zaliczone: +${formatPoints(earned)} pkt! Koloruj dalej, ile chcesz.`;
 }

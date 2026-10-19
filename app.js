@@ -109,16 +109,16 @@ const topics = [
     accent: '#00b8a9',
     dark: '#00978a',
     soft: '#dff8f5',
-    quizzes: { 0: scottieGoTask, 1: frozenTask, 2: hourOfCodeTask, 3: programmingQuiz, 4: codeRobotGame, 5: godotTask, 6: algorithmRobotGame, 7: boardCodeGame },
+    quizzes: { 0: scottieGoTask, 1: frozenTask, 2: hourOfCodeTask, 3: programmingQuiz, 4: codeRobotGame, 5: boardCodeGame, 6: algorithmRobotGame, 7: godotTask },
     lessons: [
       'Scottie Go! — pierwszy poziom',
       'Kraina Lodu — zagadki z Elzą',
       'Godzina Kodowania — zagadki',
       'Quiz: Język robotów',
       'Gra: Kod Robota',
-      'Godot — postać chodzi strzałkami',
-      'Gra: Algorytmy Robota',
       'Gra: Kod Planszy',
+      'Gra: Algorytmy Robota',
+      'Godot — postać chodzi strzałkami',
       'Szukamy błędów'
     ]
   }

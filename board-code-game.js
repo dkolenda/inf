@@ -365,7 +365,7 @@ function kpParseExpr(tokens, line, from = 0, to = tokens.length) {
     while (kpIsOp(peek(), '.')) {
       next();
       const member = next();
-      if (!member || member.type !== 'name') kpFail(line, 'Po kropce napisz nazwę, np. body.gems albo $Door.open()');
+      if (!member || member.type !== 'name') kpFail(line, 'Po kropce napisz nazwę, np. $Robot.gems albo $Door.open()');
       if (kpIsOp(peek(), '(')) {
         next();
         node = { type: 'method', obj: node, name: member.value, args: parseArgs(), line };
@@ -452,7 +452,7 @@ function kpParseHeader(word, tokens, line, depth) {
     return { type: 'else', line };
   }
   if (tokens.length === 1) {
-    kpFail(line, word === 'while' ? 'Po while napisz warunek, np. while locks > 0:' : `Po ${word} napisz warunek, np. ${word} body.has_key:`);
+    kpFail(line, word === 'while' ? 'Po while napisz warunek, np. while locks > 0:' : `Po ${word} napisz warunek, np. ${word} $Robot.has_key:`);
   }
   return { type: word, cond: kpParseExpr(tokens, line, 1), line };
 }
@@ -584,7 +584,7 @@ function kpSelfMethods(type) {
 }
 
 // Sprawdza nazwy i wywołania przed uruchomieniem — jak edytor Godota, który podkreśla błędy od razu.
-// hints — nazwy zmiennych i funkcji z innych skryptów (podpowiedź „Napisz body.gems”).
+// hints — nazwy zmiennych i funkcji z innych skryptów (podpowiedź „Napisz $Robot.gems”).
 function kpValidate(program, type, names, hints) {
   const methods = kpSelfMethods(type);
   const callables = [...Object.keys(program.funcs), ...Object.keys(KP_GLOBAL_FUNCS), ...Object.keys(methods)];
@@ -592,7 +592,7 @@ function kpValidate(program, type, names, hints) {
   const elsewhere = (name, kind) => {
     const owner = hints[kind].get(name);
     if (!owner) return '';
-    const prefix = owner === 'Robot' && names.has('body') ? 'body' : `$${owner}`;
+    const prefix = `$${owner}`;
     return kind === 'funcs'
       ? ` ${name}() to funkcja węzła ${owner}. Napisz ${prefix}.${name}()`
       : ` „${name}” to zmienna węzła ${owner}. Napisz ${prefix}.${name}`;
@@ -1000,7 +1000,7 @@ function kpExecStmt(stmt, frame) {
   }
 }
 
-// Zapis do zmiennej, właściwości węzła (body.gems) albo składowej wektora (position.x).
+// Zapis do zmiennej, właściwości węzła ($Robot.gems) albo składowej wektora (position.x).
 function kpStore(target, value, frame, line) {
   const { world, node } = frame;
   if (target.type === 'name') {
@@ -1268,11 +1268,25 @@ function kpSimulate(level, programs, keys) {
 }
 
 function kpCheckValue(world, check) {
+  if (check.prop === 'won') return world.won;
   const node = world.byName.get(check.node);
   if (check.prop === 'exists') return !node.freed;
   if (check.prop === 'position') return [node.x, node.y];
   if (check.prop === 'visible') return node.visible;
+  if (check.prop === 'x') return node.x;
   return node.members.get(check.prop);
+}
+
+// Warunek celu z level.goals: is (liczba, true/false, [x, y]), min (co najmniej) albo max (co najwyżej).
+function kpGoalMet(world, check) {
+  const value = kpCheckValue(world, check);
+  if (check.min !== undefined) return typeof value === 'number' && value >= check.min;
+  if (check.max !== undefined) return typeof value === 'number' && value <= check.max;
+  if (Array.isArray(check.is)) {
+    const [x, y] = value instanceof KpVec ? [value.x, value.y] : value || [];
+    return x === check.is[0] && y === check.is[1];
+  }
+  return typeof check.is === 'boolean' ? kpTruthy(value) === check.is : value === check.is;
 }
 
 // Poziom ma checks — sytuacje, w których plansza ma działać inaczej niż „do mety”. Np. drzwi nie mogą
@@ -1416,7 +1430,7 @@ function startBoardLevel(topic, index, game, levelIndex) {
   const world = kpCreateWorld(level, null);
   const files = Object.keys(level.scripts);
   app.querySelector('#quiz-prompt').textContent = `Poziom ${levelIndex + 1}: ${level.title}`;
-  app.querySelector('#quiz-hint').textContent = level.task;
+  app.querySelector('#quiz-hint').innerHTML = '<ul class="ng-goals kp-goals" aria-label="Cele"></ul>';
   setQuizProgress(levelIndex / game.levels.length);
 
   const body = app.querySelector('#quiz-body');
@@ -1434,11 +1448,11 @@ function startBoardLevel(topic, index, game, levelIndex) {
     <div class="kp">
       <section class="kp-left" aria-label="Edytor skryptów">
         ${level.concept ? `
-          <div class="cg-concept">
-            <p class="cg-concept-name"><span>Nowe pojęcie</span>${level.concept.name}</p>
+          <details class="cg-concept kp-concept"${kpConceptClosed(level) ? '' : ' open'}>
+            <summary class="cg-concept-name"><span>Nowe pojęcie</span>${level.concept.name}</summary>
             <p class="cg-concept-text">${level.concept.text}</p>
             ${level.concept.code ? `<pre class="cg-concept-code">${kpCodeHtml(level.concept.code)}</pre>` : ''}
-          </div>` : ''}
+          </details>` : ''}
         <div class="cg-editor kp-editor">
           <div class="kp-tabs" role="tablist" aria-label="Skrypty">
             ${files.map((file) => `
@@ -1464,7 +1478,6 @@ function startBoardLevel(topic, index, game, levelIndex) {
         ${kpDocsHtml(game, levelIndex)}
       </section>
       <section class="kp-right" aria-label="Scena">
-        <ul class="ng-goals kp-goals" aria-label="Cele"></ul>
         <div class="kp-controls">
           <button class="primary-button kp-play" type="button" title="F5"><span aria-hidden="true">▶</span> Uruchom scenę</button>
           <button class="secondary-button kp-restart" type="button" title="Uruchom od nowa" aria-label="Uruchom od nowa" disabled><span aria-hidden="true">↺</span></button>
@@ -1481,14 +1494,16 @@ function startBoardLevel(topic, index, game, levelIndex) {
           </div>
         </div>
         <div class="kp-pad" aria-label="Sterowanie">
-          <span class="kp-keys">Steruj: <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd>${level.jump ? ' · <kbd>Spacja</kbd>' : ''}</span>
-          <span class="kp-pad-buttons">
-            <button class="kp-pad-key" type="button" data-action="ui_left" aria-label="W lewo (A)">◀</button>
-            <button class="kp-pad-key" type="button" data-action="ui_up" aria-label="W górę (W)">▲</button>
-            <button class="kp-pad-key" type="button" data-action="ui_down" aria-label="W dół (S)">▼</button>
-            <button class="kp-pad-key" type="button" data-action="ui_right" aria-label="W prawo (D)">▶</button>
-            ${level.jump ? '<button class="kp-pad-key kp-pad-wide" type="button" data-action="ui_accept" aria-label="Spacja (ui_accept)">Spacja</button>' : ''}
+          <span class="kp-pad-keys" aria-hidden="true">
+            <kbd data-action="ui_up">W</kbd>
+            <span><kbd data-action="ui_left">A</kbd><kbd data-action="ui_down">S</kbd><kbd data-action="ui_right">D</kbd></span>
           </span>
+          ${level.jump ? '<kbd class="kp-pad-space" data-action="ui_accept" aria-hidden="true">Spacja</kbd>' : ''}
+          <p class="kp-pad-text">
+            <b>Robotem sterujesz klawiszami W A S D${level.jump ? ', a Spacja to skok' : ''}.</b>
+            <span class="kp-pad-off">Najpierw uruchom scenę ▶.</span>
+            <span class="kp-pad-on">Scena działa — ruszaj robotem!</span>
+          </p>
         </div>
         <div class="kp-dock">
           <div class="kp-panel">
@@ -1506,12 +1521,13 @@ function startBoardLevel(topic, index, game, levelIndex) {
         </div>
       </section>
     </div>
-    <div class="fg-overlay" hidden><div class="fg-overlay-card"></div></div>
+    <div class="fg-overlay is-screen" hidden><div class="fg-overlay-card"></div></div>
   `;
 
   const codes = {};
   files.forEach((file) => {
-    if (level.scripts[file].edit) codes[file] = save.code[levelIndex]?.[file] ?? level.scripts[file].code;
+    // Szkic kodu jest zapisany pod tytułem poziomu, żeby po zmianie poziomu nie wczytał się stary kod.
+    if (level.scripts[file].edit) codes[file] = save.code[level.title]?.[file] ?? level.scripts[file].code;
   });
   const state = {
     topic,
@@ -1532,6 +1548,7 @@ function startBoardLevel(topic, index, game, levelIndex) {
     status: body.querySelector('.kp-status'),
     board: body.querySelector('.kp-board'),
     items: body.querySelector('.kp-items'),
+    goals: app.querySelector('#quiz-hint .kp-goals'),
     log: body.querySelector('.kp-log'),
     playButton: body.querySelector('.kp-play'),
     restartButton: body.querySelector('.kp-restart'),
@@ -1594,15 +1611,7 @@ function startBoardLevel(topic, index, game, levelIndex) {
     const item = event.target.closest('.kp-tree-node');
     if (item) kpSelect(state, item.dataset.node);
   });
-  body.querySelector('.kp-pad').addEventListener('click', (event) => {
-    const key = event.target.closest('.kp-pad-key');
-    if (!key) return;
-    if (!state.playing) {
-      kpSetStatus(state, 'Najpierw uruchom scenę ▶ — dopiero wtedy robot słucha klawiszy.', '');
-      return;
-    }
-    kpHandlePress(state, key.dataset.action);
-  });
+  body.querySelector('.kp-concept')?.addEventListener('toggle', (event) => kpSetConceptClosed(level, !event.currentTarget.open));
   state.playButton.addEventListener('click', () => (state.playing ? kpStop(state, 'Scena zatrzymana. Robot wrócił na start.') : kpPlay(state)));
   state.restartButton.addEventListener('click', () => kpPlay(state));
   body.querySelector('.kp-clear').addEventListener('click', (event) => kpClearCode(state, event.currentTarget));
@@ -1721,7 +1730,7 @@ function kpClearCode(state, button) {
 
 function kpSaveCode(state) {
   const save = kpReadSave(state.game);
-  save.code[state.levelIndex] = { ...state.codes };
+  save.code[state.level.title] = { ...state.codes };
   kpWriteSave(state.game, save);
 }
 
@@ -1765,6 +1774,7 @@ function kpSyncItems(state) {
     el.classList.toggle('is-hidden', !node.visible);
     el.classList.toggle('is-open', node.type === 'door' && kpTruthy(node.members.get('is_open')));
     el.classList.toggle('is-pressed', kpIsPressed(world, node));
+    el.classList.toggle('is-on', node.type === 'button' && kpTruthy(node.members.get('pressed')));
     el.classList.toggle('is-selected', state.selected === node.name);
   });
 }
@@ -1837,8 +1847,20 @@ function kpRenderGoals(state) {
     const have = world.robot.members.get('gems');
     goals.push({ done: typeof have === 'number' && have >= gems, text: `Klejnoty: ${typeof have === 'number' ? have : 0} / ${gems} 💎` });
   }
+  // Raz spełniony cel zostaje odhaczony do końca tej sceny.
+  // Gdy choć raz zajdzie sytuacja z unless (np. drzwi otwarte bez klucza), cel jest zablokowany do końca sceny.
+  world.goalsDone = world.goalsDone || new Set();
+  world.goalsBroken = world.goalsBroken || new Set();
+  (level.goals || []).forEach((goal, i) => {
+    if (state.programs) {
+      const unless = goal.unless && (Array.isArray(goal.unless[0]) ? goal.unless : [goal.unless]);
+      if (unless && unless.some((set) => set.every((check) => kpGoalMet(world, check)))) world.goalsBroken.add(i);
+      if (!world.goalsBroken.has(i) && goal.when.every((check) => kpGoalMet(world, check))) world.goalsDone.add(i);
+    }
+    goals.push({ done: world.goalsDone.has(i), text: goal.text });
+  });
   goals.push({ done: world.won, text: 'Dojdź do mety 🏁' });
-  state.body.querySelector('.kp-goals').innerHTML = goals.map((goal) => `
+  state.goals.innerHTML = goals.map((goal) => `
     <li class="ng-goal${goal.done ? ' is-done' : ''}"><span class="ng-goal-mark" aria-hidden="true">${goal.done ? '✓' : ''}</span>${goal.text}</li>`).join('');
 }
 
@@ -1947,7 +1969,39 @@ function kpKeydown(event) {
   const action = KP_KEY_ACTIONS[event.key.toLowerCase()];
   if (!action) return;
   event.preventDefault();
+  kpFlashKey(state, action);
   kpHandlePress(state, action);
+}
+
+// Podświetla klawisz w podpowiedzi pod planszą, żeby było widać, co robi naciśnięcie.
+function kpFlashKey(state, action) {
+  const key = state.body.querySelector(`.kp-pad kbd[data-action="${action}"]`);
+  if (!key) return;
+  key.classList.remove('is-down');
+  void key.offsetWidth;
+  key.classList.add('is-down');
+}
+
+// Zwinięta karta „Nowe pojęcie” zostaje zwinięta po powrocie do poziomu.
+function kpConceptKey(level) {
+  return `kp-concept-closed:${level.concept.name}`;
+}
+
+function kpConceptClosed(level) {
+  try {
+    return localStorage.getItem(kpConceptKey(level)) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function kpSetConceptClosed(level, closed) {
+  try {
+    if (closed) localStorage.setItem(kpConceptKey(level), '1');
+    else localStorage.removeItem(kpConceptKey(level));
+  } catch {
+    // Bez pamięci przeglądarki karta po prostu otworzy się następnym razem.
+  }
 }
 
 function kpHandlePress(state, action) {
@@ -2009,7 +2063,7 @@ function winBoardLevel(state) {
   const { topic, index, game, levelIndex, level } = state;
   const save = kpReadSave(game);
   save.done[levelIndex] = true;
-  save.code[levelIndex] = { ...state.codes };
+  save.code[level.title] = { ...state.codes };
   kpWriteSave(game, save);
   const last = levelIndex === game.levels.length - 1;
   const allDone = game.levels.every((_, i) => save.done[i]);

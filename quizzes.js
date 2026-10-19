@@ -468,7 +468,6 @@ const coloringTask = {
   id: 'grafika-komputerowa/zadanie-kolorowanka',
   title: 'Grafika komputerowa',
   prompt: 'Pokoloruj obrazek online',
-  doneHint: 'Twój obrazek jest gotowy. Możesz go pobrać jako PNG.',
   reward: 30,
   pages: [
     { id: 'smok', label: 'Smok i zamek', src: 'assets/coloring/smok.svg' },
@@ -988,21 +987,21 @@ const algorithmRobotGame = {
           <li>Przy 4 skrzynkach są 3 porównania. Przy 6 skrzynkach — 5.</li>
         </ol>`
       },
-      concept: { name: 'Przejście przez rząd', text: 'Idź wzdłuż rzędu i porównuj sąsiadów. Gdy lewa liczba jest większa, zamień je. Największa liczba jedzie z robotem aż na koniec — jak bąbelek, który wypływa na powierzchnię.', code: 'for i in 5:\n\tif value() > value_right():\n\t\tswap()\n\tmove_right()' },
-      task: 'Przesuń największą liczbę na koniec rzędu.',
-      hint: 'Przy każdej skrzynce oprócz ostatniej: porównaj, ewentualnie zamień i zrób krok w prawo.',
-      buttons: ['for i in 5:', 'if value() > value_right():', 'swap()', 'move_right()'],
+      concept: { name: 'Przejście przez rząd', text: 'Idź wzdłuż rzędu i porównuj sąsiadów. Gdy lewa liczba jest większa, zamień je. Największa liczba jedzie z robotem aż na koniec — jak bąbelek, który wypływa na powierzchnię. A czy da się tak samo przepchnąć <b>najmniejszą</b> liczbę na początek?', code: 'if value() > value_right():\n\tswap()' },
+      task: 'Przesuń najmniejszą liczbę na początek rzędu. Uwaga: robot stoi na końcu!',
+      hint: 'Robot zaczyna nad ostatnią skrzynką, a <code>swap()</code> zamienia tylko z sąsiadką z prawej. Pomyśl, w którą stronę ma iść robot i co zrobić najpierw: krok czy porównanie?',
+      buttons: ['for i in 5:', 'if value() > value_right():', 'swap()', 'move_left()'],
       stars: [5, 7],
       ready: true,
       moveSteps: true,
       starter: 'func _ready():\n\t',
       boxes: { max: 9 },
-      goal: 'maxLast',
+      goal: 'minFirst',
       map: [
-        'R.....',
+        '.....R',
         'BBBBBB'
       ],
-      solution: 'func _ready():\n\tfor i in 5:\n\t\tif value() > value_right():\n\t\t\tswap()\n\t\tmove_right()'
+      solution: 'func _ready():\n\tfor i in 5:\n\t\tmove_left()\n\t\tif value() > value_right():\n\t\t\tswap()'
     },
     {
       title: 'Sortowanie bąbelkowe',
@@ -1010,7 +1009,7 @@ const algorithmRobotGame = {
         title: 'Jak działa sortowanie bąbelkowe? 🫧',
         html: `<ol>
           <li>Rząd na start: ${algoRow([4, 3, 2, 1])}</li>
-          <li>1. przejście (jak na poprzednim poziomie): 4 jedzie na koniec. ${algoRow([3, 2, 1, 4], [3])}</li>
+          <li>1. przejście w prawo (jak bąbelek): 4 jedzie na koniec. ${algoRow([3, 2, 1, 4], [3])}</li>
           <li>Wróć na początek. 2. przejście: 3 jedzie aż do czwórki. ${algoRow([2, 1, 3, 4], [2, 3])}</li>
           <li>Wróć na początek. 3. przejście: 2 staje przed trójką. ${algoRow([1, 2, 3, 4], [0, 1, 2, 3])}</li>
           <li>Każde przejście stawia na miejscu jedną liczbę (zielone). Przy 4 skrzynkach wystarczą 3 przejścia, przy 6 — 5.</li>
@@ -1259,7 +1258,7 @@ const boardGoalGemsScript = (count) => [
   'extends Area2D',
   '',
   'func _on_body_entered(body):',
-  `\tif body.gems < ${count}:`,
+  `\tif $Robot.gems < ${count}:`,
   '\t\tprint("Najpierw zbierz wszystkie klejnoty!")',
   '\t\treturn',
   '\tget_tree().change_scene_to_file("res://next_level.tscn")'
@@ -1268,7 +1267,7 @@ const boardGemScript = [
   'extends Area2D',
   '',
   'func _on_body_entered(body):',
-  '\tbody.gems += 1',
+  '\t$Robot.gems += 1',
   '\tqueue_free()'
 ].join('\n');
 const boardAreaStarter = (comment) => [
@@ -1284,8 +1283,11 @@ const boardAreaStarter = (comment) => [
 // P portal, E wyjście portalu, = ukryty most na wodzie. Powtórzona litera to kolejne węzły: Gem, Gem2, Gem3.
 // scripts — skrypty węzłów (<typ>.gd): code — kod na start, edit — dziecko może go zmieniać. open — skrypt otwarty na start.
 // checks — sytuacje sprawdzane po dojściu do mety: keys (w a s d, spacja) od startu, potem node.prop musi być równe is;
-// prop 'exists' — czy węzeł nie został usunięty. fail — co powiedzieć, gdy jest inaczej.
+// prop 'exists' — czy węzeł nie został usunięty, prop 'won' (bez node) — czy robot wygrał. fail — co powiedzieć, gdy jest inaczej.
 // jump — pokazuje klawisz Spacja, countGems: false — bez licznika klejnotów w celach.
+// goals — dodatkowe cele na liście: text i when — wszystkie warunki naraz: node.prop równe is (liczba, true/false, [x, y])
+// albo min / max (co najmniej / co najwyżej). Spełniony cel zostaje odhaczony do końca sceny.
+// unless — gdy te warunki choć raz zajdą naraz (np. drzwi otwarte bez klucza), cel nie odhaczy się w tej scenie.
 // solution i path — wzorcowe skrypty i klawisze do mety (niewyświetlane, sprawdzane testem).
 const boardCodeGame = {
   type: 'board',
@@ -1319,6 +1321,9 @@ const boardCodeGame = {
         'robot.gd': { code: boardRobotScript },
         'goal.gd': { code: boardGoalScript }
       },
+      goals: [
+        { text: 'Przycisk otwiera drzwi 🚪', when: [{ node: 'Door', prop: 'is_open', is: true }] }
+      ],
       checks: [
         { keys: '', node: 'Door', prop: 'is_open', is: false, fail: 'Drzwi otwierają się same, zanim robot stanie na przycisku. Otwieraj je w _on_body_entered(body).' }
       ],
@@ -1329,13 +1334,13 @@ const boardCodeGame = {
       title: 'Klejnoty',
       concept: {
         name: 'Jeden skrypt, wiele węzłów',
-        text: 'Wszystkie klejnoty mają ten sam skrypt <code>gem.gd</code> — piszesz go raz, a działa w każdym. <code>body</code> to robot, a <code>body.gems</code> to jego licznik klejnotów (zmienna z robot.gd). <code>queue_free()</code> usuwa węzeł ze sceny — klejnot znika.',
-        code: 'func _on_body_entered(body):\n\tbody.gems += 1\n\tqueue_free()'
+        text: 'Wszystkie klejnoty mają ten sam skrypt <code>gem.gd</code> — piszesz go raz, a działa w każdym. <code>$Robot</code> to węzeł robota, a <code>$Robot.gems</code> to jego licznik klejnotów (zmienna z robot.gd). <code>queue_free()</code> usuwa węzeł ze sceny — klejnot znika.',
+        code: 'func _on_body_entered(body):\n\t$Robot.gems += 1\n\tqueue_free()'
       },
       task: 'Zaprogramuj klejnot, żeby robot mógł go zebrać.',
-      hint: 'W <code>gem.gd</code>: <code>body.gems += 1</code> dodaje robotowi klejnot, a <code>queue_free()</code> usuwa klejnot z planszy. Zajrzyj też do <code>goal.gd</code> — meta wpuści robota dopiero z trzema klejnotami.',
+      hint: 'W <code>gem.gd</code>: <code>$Robot.gems += 1</code> dodaje robotowi klejnot, a <code>queue_free()</code> usuwa klejnot z planszy. Zajrzyj też do <code>goal.gd</code> — meta wpuści robota dopiero z trzema klejnotami.',
       fact: 'W prawdziwej grze monety i klejnoty to jedna scena wstawiona wiele razy. Poprawiasz skrypt raz — działają wszystkie.',
-      buttons: ['body.gems += 1', 'queue_free()'],
+      buttons: ['$Robot.gems += 1', 'queue_free()'],
       open: 'gem.gd',
       map: [
         '##########',
@@ -1348,8 +1353,11 @@ const boardCodeGame = {
         'robot.gd': { code: boardRobotScript },
         'goal.gd': { code: boardGoalGemsScript(3) }
       },
+      goals: [
+        { text: 'Zebrane klejnoty znikają z planszy', when: [{ node: 'Gem', prop: 'exists', is: false }, { node: 'Gem2', prop: 'exists', is: false }, { node: 'Gem3', prop: 'exists', is: false }] }
+      ],
       checks: [
-        { keys: 'dddd', node: 'Robot', prop: 'gems', is: 1, fail: 'Za jeden klejnot robot dostał inną liczbę niż 1. Jeden klejnot to jeden punkt: body.gems += 1' },
+        { keys: 'dddd', node: 'Robot', prop: 'gems', is: 1, fail: 'Za jeden klejnot robot dostał inną liczbę niż 1. Jeden klejnot to jeden punkt: $Robot.gems += 1' },
         { keys: 'ddddad', node: 'Robot', prop: 'gems', is: 1, fail: 'Robot wszedł dwa razy na ten sam klejnot i dostał go dwa razy. Po zebraniu klejnot musi zniknąć: queue_free()' }
       ],
       solution: { 'gem.gd': boardGemScript },
@@ -1359,13 +1367,13 @@ const boardCodeGame = {
       title: 'Skarbiec',
       concept: {
         name: 'Warunek if',
-        text: '<code>if</code> znaczy „jeśli”. Polecenia pod nim wykonają się tylko wtedy, gdy warunek jest prawdziwy. <code>body.gems >= 3</code> znaczy „robot ma 3 klejnoty albo więcej”.',
-        code: 'if body.gems >= 3:\n\t$Door.open()'
+        text: '<code>if</code> znaczy „jeśli”. Polecenia pod nim wykonają się tylko wtedy, gdy warunek jest prawdziwy. <code>$Robot.gems >= 3</code> znaczy „robot ma 3 klejnoty albo więcej”.',
+        code: 'if $Robot.gems >= 3:\n\t$Door.open()'
       },
       task: 'Niech przycisk otwiera skarbiec tylko robotowi z 3 klejnotami.',
-      hint: 'Przycisk już otwiera drzwi, ale każdemu. Dopisz nad <code>$Door.open()</code> warunek <code>if body.gems >= 3:</code>, a <code>$Door.open()</code> przesuń pod niego klawiszem <b>Tab</b>.',
+      hint: 'Przycisk już otwiera drzwi, ale każdemu. Dopisz nad <code>$Door.open()</code> warunek <code>if $Robot.gems >= 3:</code>, a <code>$Door.open()</code> przesuń pod niego klawiszem <b>Tab</b>.',
       fact: 'Tak działają drzwi w wielu grach: otwierają się dopiero, gdy gracz zbierze wszystkie gwiazdki.',
-      buttons: ['if body.gems >= 3:', '$Door.open()'],
+      buttons: ['if $Robot.gems >= 3:', '$Door.open()'],
       open: 'button.gd',
       map: [
         '###########',
@@ -1381,23 +1389,26 @@ const boardCodeGame = {
         'robot.gd': { code: boardRobotScript },
         'goal.gd': { code: boardGoalScript }
       },
-      checks: [
-        { keys: 'dddddd', node: 'Door', prop: 'is_open', is: false, fail: 'Robot stanął na przycisku bez klejnotów, a drzwi i tak się otworzyły. Sprawdź warunek: if body.gems >= 3:' }
+      goals: [
+        { text: 'Przycisk otwiera drzwi 🚪 tylko z 3 💎', when: [{ node: 'Robot', prop: 'gems', is: 3 }, { node: 'Door', prop: 'is_open', is: true }], unless: [{ node: 'Door', prop: 'is_open', is: true }, { node: 'Robot', prop: 'gems', max: 2 }] }
       ],
-      solution: { 'button.gd': 'extends Area2D\n\nfunc _on_body_entered(body):\n\tif body.gems >= 3:\n\t\t$Door.open()' },
+      checks: [
+        { keys: 'dddddd', node: 'Door', prop: 'is_open', is: false, fail: 'Robot stanął na przycisku bez klejnotów, a drzwi i tak się otworzyły. Sprawdź warunek: if $Robot.gems >= 3:' }
+      ],
+      solution: { 'button.gd': 'extends Area2D\n\nfunc _on_body_entered(body):\n\tif $Robot.gems >= 3:\n\t\t$Door.open()' },
       path: 'wsdddswddddwsaddd'
     },
     {
       title: 'Klucz',
       concept: {
         name: 'Prawda i fałsz',
-        text: '<code>has_key</code> to zmienna robota, która może być <code>true</code> (prawda) albo <code>false</code> (fałsz). Na początku robot nie ma klucza. <code>body.has_key = true</code> daje mu klucz, a <code>if body.has_key:</code> sprawdza, czy go ma.',
-        code: 'body.has_key = true\nif body.has_key:\n\t$Door.open()'
+        text: '<code>has_key</code> to zmienna robota, która może być <code>true</code> (prawda) albo <code>false</code> (fałsz). Na początku robot nie ma klucza. <code>$Robot.has_key = true</code> daje mu klucz, a <code>if $Robot.has_key:</code> sprawdza, czy go ma.',
+        code: '$Robot.has_key = true\nif $Robot.has_key:\n\t$Door.open()'
       },
       task: 'Zaprogramuj klucz i zamek przy drzwiach.',
-      hint: 'Kliknij klucz 🔑: w <code>key.gd</code> daj robotowi klucz i usuń go z planszy. Potem kliknij zamek 🔒: w <code>lock.gd</code> otwórz drzwi tylko wtedy, gdy <code>body.has_key</code>.',
+      hint: 'Kliknij klucz 🔑: w <code>key.gd</code> daj robotowi klucz i usuń go z planszy. Potem kliknij zamek 🔒: w <code>lock.gd</code> otwórz drzwi tylko wtedy, gdy <code>$Robot.has_key</code>.',
       fact: 'true i false to typ bool. W grach pamiętają, czy gracz ma klucz, czy drzwi są otwarte, czy gra jest w pauzie.',
-      buttons: ['body.has_key = true', 'queue_free()', 'if body.has_key:', '$Door.open()'],
+      buttons: ['$Robot.has_key = true', 'queue_free()', 'if $Robot.has_key:', '$Door.open()'],
       open: 'key.gd',
       map: [
         '###########',
@@ -1413,57 +1424,124 @@ const boardCodeGame = {
         'robot.gd': { code: boardRobotScript },
         'goal.gd': { code: boardGoalScript }
       },
+      goals: [
+        { text: 'Robot podnosi klucz 🔑', when: [{ node: 'Robot', prop: 'has_key', is: true }, { node: 'Key', prop: 'exists', is: false }] },
+        { text: 'Zamek 🔒 otwiera drzwi 🚪 tylko z kluczem', when: [{ node: 'Robot', prop: 'has_key', is: true }, { node: 'Door', prop: 'is_open', is: true }], unless: [{ node: 'Door', prop: 'is_open', is: true }, { node: 'Robot', prop: 'has_key', is: false }] }
+      ],
       checks: [
-        { keys: 'dddddd', node: 'Door', prop: 'is_open', is: false, fail: 'Robot bez klucza stanął przy zamku, a drzwi się otworzyły. W lock.gd sprawdź: if body.has_key:' },
+        { keys: 'dddddd', node: 'Door', prop: 'is_open', is: false, fail: 'Robot bez klucza stanął przy zamku, a drzwi się otworzyły. W lock.gd sprawdź: if $Robot.has_key:' },
         { keys: 'ddddw', node: 'Key', prop: 'exists', is: false, fail: 'Klucz został na podłodze, choć robot go podniósł. Po podniesieniu usuń go: queue_free()' }
       ],
       solution: {
-        'key.gd': 'extends Area2D\n\nfunc _on_body_entered(body):\n\tbody.has_key = true\n\tqueue_free()',
-        'lock.gd': 'extends Area2D\n\nfunc _on_body_entered(body):\n\tif body.has_key:\n\t\t$Door.open()'
+        'key.gd': 'extends Area2D\n\nfunc _on_body_entered(body):\n\t$Robot.has_key = true\n\tqueue_free()',
+        'lock.gd': 'extends Area2D\n\nfunc _on_body_entered(body):\n\tif $Robot.has_key:\n\t\t$Door.open()'
       },
       path: 'ddddwsddddd'
     },
     {
-      title: 'Trzy razy',
+      title: 'Trzy przyciski',
       concept: {
         name: 'Zmienna węzła',
-        text: '<code>var presses = 0</code> napisane na górze skryptu, poza funkcją, to zmienna węzła. Pamięta wartość między wywołaniami — po każdym wejściu robota na przycisk może być o 1 większa. <code>$Bridge.show()</code> pokazuje ukryty most.',
-        code: 'var presses = 0\n\nfunc _on_body_entered(body):\n\tpresses += 1'
+        text: '<code>var pressed = false</code> napisane na górze skryptu, poza funkcją, to zmienna węzła. Każdy przycisk ma własną kopię i pamięta, czy już go naciśnięto. Gdy <code>pressed</code> jest <code>true</code>, przycisk świeci na zielono. <code>$Button2.pressed</code> to zmienna innego przycisku. <code>if</code> można wstawić w <code>if</code> — wtedy wewnętrzny sprawdza się tylko, gdy zewnętrzny jest prawdziwy.',
+        code: 'var pressed = false\n\nfunc _on_body_entered(body):\n\tpressed = true'
       },
-      task: 'Niech most pojawi się po trzecim naciśnięciu przycisku.',
-      hint: 'Przy każdym wejściu zwiększ <code>presses += 1</code>, a potem sprawdź <code>if presses == 3:</code> i pokaż most <code>$Bridge.show()</code>. Żeby nacisnąć przycisk drugi raz, zejdź z niego i wejdź znowu.',
-      fact: 'Zmienne z góry skryptu Godot pokazuje w Inspektorze. Kliknij przycisk podczas gry i patrz, jak rośnie presses!',
-      buttons: ['presses += 1', 'if presses == 3:', '$Bridge.show()'],
+      task: 'Niech most pojawi się, gdy wszystkie trzy przyciski są naciśnięte.',
+      hint: 'Przy wejściu robota ustaw <code>pressed = true</code> — przycisk zrobi się zielony. Potem sprawdź po kolei każdy przycisk: pod <code>if $Button.pressed:</code> wstaw <code>if $Button2.pressed:</code>, pod nim <code>if $Button3.pressed:</code>, a na samym dole <code>$Bridge.show()</code>. Każde kolejne polecenie wcinaj o jeden <b>Tab</b> więcej.',
+      fact: 'Zmienne z góry skryptu Godot pokazuje w Inspektorze. Kliknij przycisk podczas gry i patrz, jak pressed zmienia się na true!',
+      buttons: ['pressed = true', 'if $Button.pressed:', 'if $Button2.pressed:', 'if $Button3.pressed:', '$Bridge.show()'],
       open: 'button.gd',
       map: [
         '##########',
-        '#....~...#',
-        '#R.B.=...F',
-        '#....~...#',
+        '#B...~...#',
+        '#R..B=...F',
+        '#B...~...#',
         '##########'
       ],
       scripts: {
-        'button.gd': { code: 'extends Area2D\n\nvar presses = 0\n\nfunc _on_body_entered(body):\n\tpass', edit: true },
+        'button.gd': { code: 'extends Area2D\n\n# Ten skrypt mają wszystkie trzy przyciski.\nvar pressed = false\n\nfunc _on_body_entered(body):\n\tpass', edit: true },
         'robot.gd': { code: boardRobotScript },
         'goal.gd': { code: boardGoalScript }
       },
-      checks: [
-        { keys: 'ddad', node: 'Bridge', prop: 'visible', is: false, fail: 'Most pojawił się, zanim robot nacisnął przycisk 3 razy. Licz naciśnięcia w presses i pokaż most dopiero, gdy presses == 3.' }
+      goals: [
+        { text: 'Naciśnięty przycisk zostaje zielony', when: [{ node: 'Button', prop: 'pressed', is: true }, { node: 'Button2', prop: 'pressed', is: true }, { node: 'Button3', prop: 'pressed', is: true }] },
+        {
+          text: 'Most 🌉 pojawia się po naciśnięciu wszystkich 3',
+          when: [{ node: 'Button', prop: 'pressed', is: true }, { node: 'Button2', prop: 'pressed', is: true }, { node: 'Button3', prop: 'pressed', is: true }, { node: 'Bridge', prop: 'visible', is: true }],
+          unless: ['Button', 'Button2', 'Button3'].map((node) => [{ node: 'Bridge', prop: 'visible', is: true }, { node, prop: 'pressed', is: false }])
+        }
       ],
-      solution: { 'button.gd': 'extends Area2D\n\nvar presses = 0\n\nfunc _on_body_entered(body):\n\tpresses += 1\n\tif presses == 3:\n\t\t$Bridge.show()' },
-      path: 'ddadaddddddd'
+      checks: [
+        { keys: 'ddd', node: 'Bridge', prop: 'visible', is: false, fail: 'Most pojawił się po jednym przycisku. Pokaż go dopiero, gdy wszystkie trzy mają pressed == true.' },
+        { keys: 'dddadadad', node: 'Bridge', prop: 'visible', is: false, fail: 'Robot naciskał w kółko ten sam przycisk i most się pojawił. Sprawdź pressed każdego przycisku: $Button, $Button2 i $Button3.' }
+      ],
+      solution: { 'button.gd': 'extends Area2D\n\nvar pressed = false\n\nfunc _on_body_entered(body):\n\tpressed = true\n\tif $Button.pressed:\n\t\tif $Button2.pressed:\n\t\t\tif $Button3.pressed:\n\t\t\t\t$Bridge.show()' },
+      path: 'wsswdddddddd'
+    },
+    {
+      title: 'Wielki skarbiec',
+      concept: {
+        name: 'Wszystko razem',
+        text: 'Ta plansza sprawdza wszystko, czego już się nauczyłeś: sygnał <code>_on_body_entered(body)</code>, zbieranie klejnotów z <code>queue_free()</code>, warunek <code>if</code>, klucz <code>has_key</code> i zmienną węzła <code>pressed</code>. Każdy element planszy trzeba zaprogramować sam — kliknij go, żeby otworzyć jego skrypt.'
+      },
+      task: 'Zbuduj most, zdobądź klucz, otwórz skarbiec i wejdź na metę z 3 klejnotami.',
+      hint: 'Po kolei: <code>button.gd</code> — na górze skryptu dodaj zmienną <code>var pressed = false</code>, przy wejściu robota ustaw <code>pressed = true</code> i pokaż most <code>$Bridge.show()</code>, gdy oba przyciski są naciśnięte. <code>gem.gd</code> — dodaj robotowi klejnot i usuń klejnot. <code>key.gd</code> — daj robotowi klucz i usuń klucz. <code>lock.gd</code> — otwórz drzwi skarbca tylko robotowi z kluczem. <code>goal.gd</code> — wpuść na metę tylko robota z 3 klejnotami: dopisz <code>if</code>, a linię pod nim wetnij klawiszem <b>Tab</b>.',
+      fact: 'Prawdziwe poziomy gier składają się z wielu małych skryptów. Każdy robi jedną rzecz, a razem tworzą zagadkę.',
+      buttons: ['var pressed = false', 'pressed = true', 'if $Button.pressed:', 'if $Button2.pressed:', '$Bridge.show()', '$Robot.gems += 1', 'queue_free()', '$Robot.has_key = true', 'if $Robot.has_key:', '$Door.open()', 'if $Robot.gems >= 3:'],
+      open: 'button.gd',
+      map: [
+        '#############',
+        '#B..G.~.K.#G.',
+        '#R....=...LDF',
+        '#B..G.~...#..',
+        '#############'
+      ],
+      scripts: {
+        'button.gd': { code: boardAreaStarter('Ten skrypt mają oba przyciski.'), edit: true },
+        'gem.gd': { code: boardAreaStarter('Ten skrypt mają wszystkie klejnoty.'), edit: true },
+        'key.gd': { code: boardAreaStarter('Klucz: daj go robotowi i zniknij.'), edit: true },
+        'lock.gd': { code: boardAreaStarter('Zamek: otwórz skarbiec robotowi z kluczem.'), edit: true },
+        'goal.gd': { code: 'extends Area2D\n\n# Meta: wpuść tylko robota z 3 klejnotami.\nfunc _on_body_entered(body):\n\tget_tree().change_scene_to_file("res://next_level.tscn")', edit: true },
+        'door.gd': { code: boardDoorScript },
+        'robot.gd': { code: boardRobotScript }
+      },
+      goals: [
+        {
+          text: 'Most 🌉 pojawia się po naciśnięciu obu przycisków',
+          when: [{ node: 'Button', prop: 'pressed', is: true }, { node: 'Button2', prop: 'pressed', is: true }, { node: 'Bridge', prop: 'visible', is: true }],
+          unless: ['Button', 'Button2'].map((node) => [{ node: 'Bridge', prop: 'visible', is: true }, { node, prop: 'pressed', is: false }])
+        },
+        { text: 'Robot podnosi klucz 🔑', when: [{ node: 'Robot', prop: 'has_key', is: true }, { node: 'Key', prop: 'exists', is: false }] },
+        { text: 'Zamek 🔒 otwiera skarbiec 🚪 tylko z kluczem', when: [{ node: 'Robot', prop: 'has_key', is: true }, { node: 'Door', prop: 'is_open', is: true }], unless: [{ node: 'Door', prop: 'is_open', is: true }, { node: 'Robot', prop: 'has_key', is: false }] },
+        { text: 'Zebrane klejnoty 💎 znikają z planszy', when: [{ node: 'Gem', prop: 'exists', is: false }, { node: 'Gem2', prop: 'exists', is: false }, { node: 'Gem3', prop: 'exists', is: false }] }
+      ],
+      checks: [
+        { keys: 'w', node: 'Bridge', prop: 'visible', is: false, fail: 'Most pojawił się po jednym przycisku. Pokaż go dopiero, gdy oba przyciski mają pressed == true.' },
+        { keys: 'wsw', node: 'Bridge', prop: 'visible', is: false, fail: 'Robot nacisnął dwa razy ten sam przycisk i most się pojawił. Sprawdź pressed obu przycisków: $Button i $Button2.' },
+        { keys: 'wdddad', node: 'Robot', prop: 'gems', is: 1, fail: 'Robot wszedł dwa razy na ten sam klejnot i dostał go dwa razy. Jeden klejnot to $Robot.gems += 1, a potem queue_free()' },
+        { keys: 'wsswddddddwd', node: 'Key', prop: 'exists', is: false, fail: 'Klucz został na podłodze, choć robot go podniósł. Po podniesieniu usuń go: queue_free()' },
+        { keys: 'wsswddddddddd', node: 'Door', prop: 'is_open', is: false, fail: 'Robot bez klucza stanął przy zamku, a skarbiec się otworzył. W lock.gd sprawdź: if $Robot.has_key:' },
+        { keys: 'wsswddddddwdsdddd', prop: 'won', is: false, fail: 'Robot wszedł na metę bez klejnotów i wygrał. W goal.gd sprawdź: if $Robot.gems >= 3:' }
+      ],
+      solution: {
+        'button.gd': 'extends Area2D\n\nvar pressed = false\n\nfunc _on_body_entered(body):\n\tpressed = true\n\tif $Button.pressed:\n\t\tif $Button2.pressed:\n\t\t\t$Bridge.show()',
+        'gem.gd': boardGemScript,
+        'key.gd': 'extends Area2D\n\nfunc _on_body_entered(body):\n\t$Robot.has_key = true\n\tqueue_free()',
+        'lock.gd': 'extends Area2D\n\nfunc _on_body_entered(body):\n\tif $Robot.has_key:\n\t\t$Door.open()',
+        'goal.gd': 'extends Area2D\n\nfunc _on_body_entered(body):\n\tif $Robot.gems >= 3:\n\t\tget_tree().change_scene_to_file("res://next_level.tscn")'
+      },
+      path: 'wssdddwwsddddwdsddwsd'
     },
     {
       title: 'Teleport',
       concept: {
         name: 'Pozycja',
-        text: '<code>position</code> to miejsce węzła na planszy: <code>Vector2</code>, czyli dwie liczby — <code>x</code> (kolumna) i <code>y</code> (wiersz). Liczby widać przy brzegach planszy. <code>body.position = $Exit.position</code> przenosi robota tam, gdzie stoi wyjście portalu.',
-        code: 'body.position = $Exit.position'
+        text: '<code>position</code> to miejsce węzła na planszy: <code>Vector2</code>, czyli dwie liczby — <code>x</code> (kolumna) i <code>y</code> (wiersz). Liczby widać przy brzegach planszy. <code>$Robot.position = $Exit.position</code> przenosi robota tam, gdzie stoi wyjście portalu.',
+        code: '$Robot.position = $Exit.position'
       },
       task: 'Zaprogramuj portal, żeby przenosił robota do wyjścia ✨.',
-      hint: 'W <code>portal.gd</code> ustaw pozycję robota (<code>body.position</code>) na pozycję wyjścia (<code>$Exit.position</code>). Kliknij wyjście ✨ i spójrz w Inspektor — zobaczysz jego position.',
+      hint: 'W <code>portal.gd</code> ustaw pozycję robota (<code>$Robot.position</code>) na pozycję wyjścia (<code>$Exit.position</code>). Kliknij wyjście ✨ i spójrz w Inspektor — zobaczysz jego position.',
       fact: 'W prawdziwym Godocie position liczy się w pikselach, a nie w kratkach — np. Vector2(320, 128).',
-      buttons: ['body.position = $Exit.position'],
+      buttons: ['$Robot.position = $Exit.position'],
       open: 'portal.gd',
       map: [
         '##########',
@@ -1476,7 +1554,10 @@ const boardCodeGame = {
         'robot.gd': { code: boardRobotScript },
         'goal.gd': { code: boardGoalScript }
       },
-      solution: { 'portal.gd': 'extends Area2D\n\nfunc _on_body_entered(body):\n\tbody.position = $Exit.position' },
+      goals: [
+        { text: 'Portal 🌀 przenosi robota do wyjścia ✨', when: [{ node: 'Robot', prop: 'position', is: [7, 1] }] }
+      ],
+      solution: { 'portal.gd': 'extends Area2D\n\nfunc _on_body_entered(body):\n\t$Robot.position = $Exit.position' },
       path: 'dddsdsd'
     },
     {
@@ -1504,6 +1585,10 @@ const boardCodeGame = {
         'robot.gd': { code: boardRobotScript },
         'goal.gd': { code: boardGoalScript }
       },
+      goals: [
+        { text: 'Każdy przycisk zdejmuje 1 zamek i znika', when: [{ node: 'Button', prop: 'exists', is: false }, { node: 'Button2', prop: 'exists', is: false }, { node: 'Door', prop: 'locks', is: 0 }] },
+        { text: 'Drzwi 🚪 otwierają się po obu przyciskach', when: [{ node: 'Door', prop: 'locks', is: 0 }, { node: 'Door', prop: 'is_open', is: true }], unless: [{ node: 'Door', prop: 'is_open', is: true }, { node: 'Door', prop: 'locks', min: 1 }] }
+      ],
       checks: [
         { keys: 'w', node: 'Door', prop: 'is_open', is: false, fail: 'Drzwi otworzyły się już po jednym przycisku. Każdy przycisk zmniejsza locks o 1, a open() wołamy dopiero, gdy locks == 0.' },
         { keys: 'wsw', node: 'Door', prop: 'is_open', is: false, fail: 'Robot nacisnął dwa razy ten sam przycisk i drzwi się otworzyły. Po naciśnięciu przycisk ma zniknąć: queue_free()' }
@@ -1538,6 +1623,10 @@ const boardCodeGame = {
         'robot.gd': { code: boardRobotScript, edit: true },
         'goal.gd': { code: boardGoalScript }
       },
+      goals: [
+        { text: 'Przeskocz Spacją pierwszą wodę 🌊', when: [{ node: 'Robot', prop: 'x', min: 5 }] },
+        { text: 'Przeskocz drugą wodę 🌊', when: [{ node: 'Robot', prop: 'x', min: 8 }] }
+      ],
       solution: { 'robot.gd': boardRobotJumpScript },
       path: 'dd d dd'
     },
@@ -1582,6 +1671,12 @@ const boardCodeGame = {
         },
         'goal.gd': { code: boardGoalScript }
       },
+      goals: [
+        { text: 'D idzie w prawo ➡️', when: [{ node: 'Robot', prop: 'direction', is: [1, 0] }, { node: 'Robot', prop: 'x', min: 2 }] },
+        { text: 'S idzie w dół ⬇️', when: [{ node: 'Robot', prop: 'direction', is: [0, 1] }] },
+        { text: 'A idzie w lewo ⬅️', when: [{ node: 'Robot', prop: 'direction', is: [-1, 0] }] },
+        { text: 'W idzie w górę ⬆️', when: [{ node: 'Robot', prop: 'direction', is: [0, -1] }] }
+      ],
       solution: { 'robot.gd': boardRobotScript },
       path: 'ddssaassddddwwwwddssssd'
     },
@@ -1609,6 +1704,10 @@ const boardCodeGame = {
         'gem.gd': { code: boardGemScript },
         'goal.gd': { code: boardGoalScript }
       },
+      goals: [
+        { text: 'Skok nad wodą 🌊 zabiera 1 💎', when: [{ node: 'Robot', prop: 'x', min: 6 }, { node: 'Robot', prop: 'gems', is: 0 }] },
+        { text: 'Drugi skok też kosztuje 1 💎', when: [{ node: 'Robot', prop: 'x', min: 10 }, { node: 'Robot', prop: 'gems', is: 0 }] }
+      ],
       checks: [
         { keys: ' ', node: 'Robot', prop: 'position', is: [1, 1], fail: 'Robot skoczył, choć nie miał żadnego klejnotu. Skacz tylko wtedy, gdy gems > 0.' },
         { keys: 'ddd  ', node: 'Robot', prop: 'position', is: [6, 1], fail: 'Robot skoczył drugi raz, choć wydał już swój jedyny klejnot. Każdy skok zabiera jeden klejnot: gems -= 1' }
