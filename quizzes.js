@@ -468,9 +468,8 @@ const coloringTask = {
   id: 'grafika-komputerowa/zadanie-kolorowanka',
   title: 'Grafika komputerowa',
   prompt: 'Pokoloruj obrazek online',
-  doneHint: 'Obrazek jest cały kolorowy. Możesz go pobrać jako PNG.',
+  doneHint: 'Twój obrazek jest gotowy. Możesz go pobrać jako PNG.',
   reward: 30,
-  minColors: 5,
   pages: [
     { id: 'smok', label: 'Smok i zamek', src: 'assets/coloring/smok.svg' },
     { id: 'rakieta', label: 'Kosmonauta i rakieta', src: 'assets/coloring/rakieta.svg' },

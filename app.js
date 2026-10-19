@@ -1398,8 +1398,12 @@ function showReward(points, correct, correctCount, total, gif) {
   rewardTimers = [];
 
   const character = rewardDialog.querySelector('#reward-character');
-  if (gif) character.src = gif;
-  else character.removeAttribute('src');
+  // Ukryj obrazek do czasu wczytania nowego GIF-a, żeby nie mignął mem z poprzedniego zadania.
+  if (gif && !(character.getAttribute('src') === gif && character.complete)) {
+    character.classList.add('is-loading');
+    character.onload = () => character.classList.remove('is-loading');
+    character.src = gif;
+  } else if (!gif) character.removeAttribute('src');
 
   const allCorrect = correctCount === total;
   rewardDialog.classList.remove('is-task');

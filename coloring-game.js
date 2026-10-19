@@ -1,8 +1,8 @@
 // Zadanie „Kolorowanka online”: uczeń wybiera obrazek SVG i koloruje go jak na kolorujonline.pl.
 // Każde pole obrazka to osobny kształt z klasą „c”. Narzędzia: wiaderko (wypełnia pole), gumka,
 // pędzel (maluje swobodnie) i magiczny pędzel (maluje tylko w polu, w którym zaczęto ruch).
-// Zalicza obrazek bez białych pól i z co najmniej minColors kolorami; pola z data-optional
-// (drobne kawałki obrazków z tools/png-do-kolorowanki.mjs) można pominąć.
+// Bez wymogów: „Gotowe” zalicza obrazek pokolorowany dowolnie. Pola z data-optional
+// (drobne kawałki obrazków z tools/png-do-kolorowanki.mjs) nie liczą się do paska postępu.
 // Korzysta z funkcji app.js (setQuizProgress, completeLesson, saveStudentPoints…)
 // i z burstFileGameConfetti z file-game.js.
 let coloringGame = null;
@@ -38,7 +38,7 @@ function renderColoringGame(topic, index, game) {
   app.querySelector('#quiz-kicker').textContent = game.title;
   app.querySelector('#quiz-prompt').textContent = game.prompt;
   app.querySelector('#quiz-hint').textContent =
-    `Wybierz obrazek. Pokoloruj wszystkie pola — użyj co najmniej ${game.minColors} kolorów.`;
+    'Wybierz obrazek i pokoloruj go tak, jak chcesz.';
   setQuizProgress(0);
 
   const body = app.querySelector('#quiz-body');
@@ -89,7 +89,7 @@ function startColoringGame(topic, index, game, page) {
     'Wybierz narzędzie i kolor. Magiczny pędzel nie wyjdzie za linie, a wiaderko wypełni całe pole.';
 
   const body = app.querySelector('#quiz-body');
-  body.className = 'quiz-body cg';
+  body.className = 'quiz-body cg-coloring';
   body.innerHTML = `
     <div class="cg-workspace">
       <div class="cg-board"></div>
@@ -120,11 +120,6 @@ function startColoringGame(topic, index, game, page) {
           <button class="cg-action" type="button" data-action="reset" title="Od nowa"><span aria-hidden="true">🔄</span><small>Od nowa</small></button>
         </div>
       </aside>
-    </div>
-    <div class="cg-status">
-      <p class="cg-counter" aria-live="polite"></p>
-      <button class="secondary-button cg-other" type="button">🖼️ Inny obrazek</button>
-      <button class="primary-button cg-done" type="button">Gotowe <span aria-hidden="true">✓</span></button>
     </div>
   `;
 
@@ -179,8 +174,6 @@ function startColoringGame(topic, index, game, page) {
   body.querySelector('[data-action="redo"]').addEventListener('click', redoColoring);
   body.querySelector('[data-action="download"]').addEventListener('click', downloadColoring);
   body.querySelector('[data-action="reset"]').addEventListener('click', resetColoring);
-  body.querySelector('.cg-other').addEventListener('click', () => renderColoringGame(topic, index, game));
-  body.querySelector('.cg-done').addEventListener('click', checkColoring);
 
   svg.addEventListener('pointerdown', coloringPointerDown);
   svg.addEventListener('pointermove', coloringPointerMove);
@@ -362,7 +355,6 @@ function fillColoringRegion(region) {
   const previous = regionColor(region);
   if (previous === state.color) return;
   region.setAttribute('fill', state.color);
-  region.classList.remove('is-missing');
   pushColoringAction({ fills: [[region, previous, state.color]] });
 }
 
@@ -461,13 +453,11 @@ function coloringStats() {
 
 function updateColoringStatus() {
   const state = coloringGame;
-  const { blank, used } = coloringStats();
+  const { blank } = coloringStats();
   const total = state.regions.filter((region) => !region.hasAttribute('data-optional')).length || 1;
   setQuizProgress((total - blank) / total);
   state.body.querySelector('[data-action="undo"]').disabled = !state.undoStack.length;
   state.body.querySelector('[data-action="redo"]').disabled = !state.redoStack.length;
-  state.body.querySelector('.cg-counter').innerHTML =
-    `Białe pola: <b>${blank}</b> · Kolory: <b>${used}</b> / ${state.game.minColors}`;
 }
 
 function readColoringSave(pageId) {
@@ -504,31 +494,6 @@ function saveColoring() {
     // Bez zapisu obrazek i tak działa — przepada tylko po odświeżeniu strony.
   }
   updateColoringStatus();
-}
-
-// Białe pola migają, żeby uczeń je znalazł; gdy wszystko gotowe — nagroda.
-function checkColoring() {
-  const state = coloringGame;
-  const { blank, used } = coloringStats();
-  const message = state.body.querySelector('.cg-counter');
-
-  if (blank) {
-    const missing = blankColoringRegions();
-    state.regions.forEach((region) => {
-      region.classList.remove('is-missing');
-      if (missing.includes(region)) {
-        void region.getBoundingClientRect();
-        region.classList.add('is-missing');
-      }
-    });
-    message.innerHTML = `Zostały <b>białe pola: ${blank}</b> — migają na obrazku.`;
-    return;
-  }
-  if (used < state.game.minColors) {
-    message.innerHTML = `Użyj co najmniej <b>${state.game.minColors} kolorów</b> — masz ${used}.`;
-    return;
-  }
-  finishColoringGame();
 }
 
 function downloadColoring() {

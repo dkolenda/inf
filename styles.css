@@ -1283,11 +1283,12 @@ footer {
   position: relative;
   display: block;
   width: 100%;
-  max-height: 400px;
+  max-height: 300px;
   object-fit: contain;
 }
 
-.reward-character:not([src]) { visibility: hidden; }
+.reward-character:not([src]),
+.reward-character.is-loading { visibility: hidden; }
 
 .reward-floor {
   position: absolute;
@@ -2351,17 +2352,15 @@ footer {
 .cg-board[data-tool="magic"] .cg-svg { touch-action: none; }
 .cg-svg { display: block; width: 100%; height: auto; user-select: none; }
 .cg-svg .c { transition: fill 120ms ease; }
-.cg-svg .c.is-missing { animation: cg-missing 0.5s ease-in-out 4; }
 .cg-svg .cg-paint,
 .cg-svg .cg-outline { pointer-events: none; }
 .cg-board[data-tool="erase"] .cg-free { pointer-events: stroke; }
-.cg-status { margin-top: 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.cg-counter { margin: 0 auto 0 0; color: var(--muted); font-weight: 700; }
-.cg-counter b { color: var(--ink); }
-.cg-done { background: var(--path-accent, var(--green)); border-bottom-color: var(--path-accent-dark, var(--green-dark)); }
 .cg-summary .cg-board { max-width: 560px; margin: 0 auto 20px; cursor: default; }
 .cg-summary .cg-svg { pointer-events: none; }
-@keyframes cg-missing { 50% { fill: #ffd54f; } }
+/* Gra w kodowanie (niżej w pliku) używa tych samych klas .cg-board/.cg-palette — tu je przykrywamy. */
+.cg-coloring .cg-board,
+.cg-summary .cg-board { position: static; aspect-ratio: auto; container-type: normal; border: 2px solid #ffd76a; border-radius: 18px; background: white; }
+.cg-coloring .cg-palette { display: grid; gap: 7px; }
 
 @media (max-width: 760px) {
   .cg-workspace { grid-template-columns: minmax(0, 1fr); }
@@ -2857,3 +2856,24 @@ body.pv-open { overflow: hidden; }
   .kp-door-leaf { animation-duration: 1ms; transition: none; }
   .kp-portal .kp-icon { animation: none; }
 }
+
+.pwa-update {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  z-index: 1000;
+  width: max-content;
+  max-width: calc(100% - 32px);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 12px 12px 20px;
+  transform: translateX(-50%);
+  border: 2px solid var(--line);
+  border-radius: 18px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  font-weight: 800;
+}
+
+.pwa-update .primary-button { min-height: 44px; padding: 0 18px; }
