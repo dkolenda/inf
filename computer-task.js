@@ -117,4 +117,5 @@ function finishComputerTask(topic, index, task) {
   `;
   syncStudentProfile();
   window.scrollTo({ top: 0, behavior: 'instant' });
+  showTaskReward(earned, task.rewardGif);
 }

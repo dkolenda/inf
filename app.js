@@ -109,15 +109,17 @@ const topics = [
     accent: '#00b8a9',
     dark: '#00978a',
     soft: '#dff8f5',
-    quizzes: { 0: scottieGoTask, 1: frozenTask, 2: hourOfCodeTask },
+    quizzes: { 0: scottieGoTask, 1: frozenTask, 2: hourOfCodeTask, 3: programmingQuiz, 4: codeRobotGame, 5: godotTask, 6: algorithmRobotGame, 7: boardCodeGame },
     lessons: [
       'Scottie Go! — pierwszy poziom',
       'Kraina Lodu — zagadki z Elzą',
       'Godzina Kodowania — zagadki',
-      'Warunki: jeśli… to…',
-      'Zmienne',
-      'Szukamy błędów',
-      'Mój pierwszy program'
+      'Quiz: Język robotów',
+      'Gra: Kod Robota',
+      'Godot — postać chodzi strzałkami',
+      'Gra: Algorytmy Robota',
+      'Gra: Kod Planszy',
+      'Szukamy błędów'
     ]
   }
 ];
@@ -544,6 +546,16 @@ function renderQuiz(slug, index) {
     return;
   }
 
+  if (quiz.type === 'code') {
+    renderCodeGame(topic, index, quiz);
+    return;
+  }
+
+  if (quiz.type === 'board') {
+    renderBoardGame(topic, index, quiz);
+    return;
+  }
+
   document.title = `${quiz.title} — Informatyczna Przygoda`;
   document.querySelector('meta[name="theme-color"]').content = topic.accent;
   app.replaceChildren(quizTemplate.content.cloneNode(true));
@@ -596,6 +608,7 @@ function renderQuizStep() {
     selected: null,
     checked: false,
     order: question.shuffle === false ? items : shuffle(items),
+    sequence: [],
     bucketOrder: question.match && question.buckets ? shuffle(question.buckets) : question.buckets
   });
   if (question.type === 'inputs') {
@@ -704,6 +717,7 @@ function renderQuizBody() {
   else if (question.type === 'keyboard') renderKeyboard(question, body);
   else if (question.type === 'inputs') renderInputs(question, body);
   else if (question.type === 'practice') renderPractice(question, body);
+  else if (question.type === 'order') renderOrder(question, body);
   else renderBuckets(question, body);
 
   app.querySelector('.quiz-view').classList.toggle('has-selection', quizState.selected !== null);
@@ -734,11 +748,18 @@ function createChip(question, itemIndex) {
   chip.setAttribute('aria-pressed', String(selected === itemIndex));
 
   if (checked) {
-    const isCorrect = answers.get(itemIndex) === item.answer;
+    const isCorrect = question.type === 'order'
+      ? orderScores(question)[itemIndex] === 1
+      : answers.get(itemIndex) === item.answer;
     chip.classList.add(isCorrect ? 'correct' : 'wrong');
     chip.disabled = true;
 
-    if (!isCorrect && question.type !== 'keyboard') {
+    if (!isCorrect && question.type === 'order') {
+      const fix = document.createElement('small');
+      const places = orderAnswers(question).flatMap((answer, position) => (answer === item.answer ? [position + 1] : []));
+      fix.textContent = `→ miejsce ${places.join(' lub ')}`;
+      chip.append(fix);
+    } else if (!isCorrect && question.type !== 'keyboard') {
       const fix = document.createElement('small');
       const answerBucket = question.buckets.find((bucket) => bucket.id === item.answer);
       fix.textContent = question.match ? 'to nie ta definicja' : `→ ${answerBucket.label}`;
@@ -816,6 +837,58 @@ function renderBuckets(question, body) {
   });
 
   body.replaceChildren(pool, buckets);
+}
+
+// Kolejność kroków: answer to numer kroku, a kroki z tym samym numerem są wymienne.
+function orderAnswers(question) {
+  return question.items.map((item) => item.answer).sort((a, b) => a - b);
+}
+
+function orderScores(question) {
+  const expected = orderAnswers(question);
+  return question.items.map((item, itemIndex) => (item.answer === expected[quizState.sequence.indexOf(itemIndex)] ? 1 : 0));
+}
+
+// Jedna numerowana lista; krok z puli trafia na jej koniec albo w miejsce upuszczenia.
+function renderOrder(question, body) {
+  body.className = 'quiz-body bucket-quiz order-quiz';
+  const list = document.createElement('ol');
+  list.className = 'order-list';
+  list.dataset.drop = 'list';
+
+  quizState.sequence.forEach((itemIndex, position) => {
+    const step = document.createElement('li');
+    step.className = 'order-step';
+    step.dataset.drop = 'list';
+    step.dataset.position = position;
+    const number = document.createElement('span');
+    number.className = 'order-number';
+    number.textContent = position + 1;
+    step.append(number, createChip(question, itemIndex));
+    list.append(step);
+  });
+
+  if (!quizState.sequence.length) {
+    const empty = document.createElement('li');
+    empty.className = 'order-empty';
+    empty.textContent = 'Tu ułóż kroki po kolei.';
+    list.append(empty);
+  } else if (!quizState.checked && quizState.sequence.length < question.items.length) {
+    // Puste miejsce na końcu listy: upuszczony tu krok trafia na sam dół.
+    const slot = document.createElement('li');
+    slot.className = 'order-step order-slot';
+    slot.dataset.drop = 'list';
+    const number = document.createElement('span');
+    number.className = 'order-number';
+    number.textContent = quizState.sequence.length + 1;
+    const space = document.createElement('span');
+    space.className = 'order-slot-space';
+    space.textContent = 'Upuść tu następny krok';
+    slot.append(number, space);
+    list.append(slot);
+  }
+
+  body.replaceChildren(renderChipPool(question), list);
 }
 
 // Klawiatura z pustymi miejscami: każde miejsce (slot) to grupa na jeden klawisz.
@@ -1056,7 +1129,30 @@ function renderChoices(question, body) {
       options.append(button);
     });
 
-    row.append(text, options);
+    row.append(text);
+
+    // Algorytmy do porównania: karty obok siebie z ponumerowanymi krokami.
+    if (item.algorithms) {
+      const algorithms = document.createElement('div');
+      algorithms.className = 'choice-algorithms';
+      item.algorithms.forEach((steps, index) => {
+        const card = document.createElement('div');
+        card.className = 'choice-algorithm';
+        const title = document.createElement('strong');
+        title.textContent = `Algorytm ${index + 1}`;
+        const list = document.createElement('ol');
+        steps.forEach((step) => {
+          const entry = document.createElement('li');
+          entry.textContent = step;
+          list.append(entry);
+        });
+        card.append(title, list);
+        algorithms.append(card);
+      });
+      row.append(algorithms);
+    }
+
+    row.append(options);
 
     if (checked && item.explain) {
       const explain = document.createElement('p');
@@ -1069,10 +1165,18 @@ function renderChoices(question, body) {
   });
 }
 
-function placeQuizItem(itemIndex, bucketId) {
-  const { answers } = quizState;
+function placeQuizItem(itemIndex, bucketId, position) {
+  const { answers, sequence } = quizState;
 
-  if (bucketId === '') {
+  if (currentQuestion().type === 'order') {
+    const from = sequence.indexOf(itemIndex);
+    if (from !== -1) sequence.splice(from, 1);
+    if (bucketId === '') answers.delete(itemIndex);
+    else {
+      answers.set(itemIndex, bucketId);
+      sequence.splice(position ?? sequence.length, 0, itemIndex);
+    }
+  } else if (bucketId === '') {
     answers.delete(itemIndex);
   } else {
     if (currentQuestion().match) {
@@ -1102,6 +1206,11 @@ function handleQuizClick(event) {
   const chip = event.target.closest('.chip');
   const bucket = event.target.closest('.bucket');
   const { selected, answers } = quizState;
+
+  if (question.type === 'order') {
+    if (chip) placeQuizItem(Number(chip.dataset.item), answers.has(Number(chip.dataset.item)) ? '' : 'list');
+    return;
+  }
 
   if (chip) {
     const itemIndex = Number(chip.dataset.item);
@@ -1182,7 +1291,8 @@ function handleQuizDrop(event) {
   if (!target || !quizState || quizState.checked) return;
   event.preventDefault();
   const itemIndex = Number(event.dataTransfer.getData('text/plain'));
-  if (Number.isInteger(itemIndex)) placeQuizItem(itemIndex, target.dataset.drop);
+  const step = event.target.closest('[data-position]');
+  if (Number.isInteger(itemIndex)) placeQuizItem(itemIndex, target.dataset.drop, step ? Number(step.dataset.position) : undefined);
 }
 
 const rewardDialog = document.querySelector('#reward-dialog');
@@ -1292,6 +1402,7 @@ function showReward(points, correct, correctCount, total, gif) {
   else character.removeAttribute('src');
 
   const allCorrect = correctCount === total;
+  rewardDialog.classList.remove('is-task');
   rewardDialog.classList.toggle('is-partial', !allCorrect);
   rewardDialog.querySelector('#reward-title').textContent = allCorrect
     ? rewardTitles[Math.floor(Math.random() * rewardTitles.length)]
@@ -1307,6 +1418,13 @@ function showReward(points, correct, correctCount, total, gif) {
   rewardDialog.showModal();
   rewardDialog.querySelector('#reward-action').focus();
   if (allCorrect) launchConfetti();
+}
+
+// Zadanie zaliczone kodem nauczyciela: ten sam mem i konfetti, ale tylko punkty (bez poprawnych i celności).
+function showTaskReward(points, gif) {
+  showReward(points, 1, 1, 1, gif);
+  rewardDialog.classList.add('is-task');
+  rewardDialog.querySelector('#reward-copy').textContent = 'Zadanie zaliczone!';
 }
 
 function closeReward() {
@@ -1339,7 +1457,9 @@ function handleQuizCheck() {
     return;
   }
 
-  const scores = question.items.map((item, itemIndex) => scoreItem(item, quizState.answers.get(itemIndex)));
+  const scores = question.type === 'order'
+    ? orderScores(question)
+    : question.items.map((item, itemIndex) => scoreItem(item, quizState.answers.get(itemIndex)));
   const correct = scores.reduce((sum, score) => sum + score, 0);
   const total = question.items.length;
   const points = question.items.reduce((sum, item, itemIndex) => sum + scores[itemIndex] * itemPoints(item), 0);
@@ -1417,6 +1537,8 @@ function route() {
   stopFakeNewsGame();
   stopTypingGame();
   stopColoringGame();
+  stopCodeGame();
+  stopBoardGame();
   stopPivotAnimator();
   closeReward();
   if (match && topics.find((topic) => topic.slug === match[1])?.locked) {
