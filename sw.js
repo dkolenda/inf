@@ -12,7 +12,7 @@
 // utrzymywać ręcznie. Zmiana SHELL_CACHE / ASSETS_CACHE wymusza pobranie wszystkiego od nowa.
 
 const SHELL_CACHE = 'inf-shell-v1';
-const ASSETS_CACHE = 'inf-assets-v1';
+const ASSETS_CACHE = 'inf-assets-v2';
 const FONTS_CACHE = 'inf-fonts-v1';
 const CACHES = [SHELL_CACHE, ASSETS_CACHE, FONTS_CACHE];
 

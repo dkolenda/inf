@@ -109,7 +109,7 @@ const topics = [
     accent: '#00b8a9',
     dark: '#00978a',
     soft: '#dff8f5',
-    quizzes: { 0: scottieGoTask, 1: frozenTask, 2: hourOfCodeTask, 3: programmingQuiz, 4: codeRobotGame, 5: boardCodeGame, 6: algorithmRobotGame, 7: godotTask },
+    quizzes: { 0: scottieGoTask, 1: frozenTask, 2: hourOfCodeTask, 3: programmingQuiz, 4: codeRobotGame, 5: boardCodeGame, 6: algorithmRobotGame, 8: kosmoKrokiGame },
     lessons: [
       'Scottie Go! — pierwszy poziom',
       'Kraina Lodu — zagadki z Elzą',
@@ -119,6 +119,7 @@ const topics = [
       'Gra: Kod Planszy',
       'Gra: Algorytmy Robota',
       'Godot — postać chodzi strzałkami',
+      'Gra: Kosmo Kroki',
       'Szukamy błędów'
     ]
   }
@@ -139,12 +140,25 @@ const studentNameKey = 'informatyczna-przygoda:name';
 const studentPointsKey = 'informatyczna-przygoda:points';
 const progressKey = 'informatyczna-przygoda:progress';
 const quizBestKey = 'informatyczna-przygoda:quiz-best';
+const quizProgressKey = 'informatyczna-przygoda:quiz-progress';
 let sessionStudentName = '';
 let sessionStudentPoints = 0;
 let sessionProgress = {};
 let sessionQuizBest = {};
+let sessionQuizProgress = {};
 let activeLesson = null;
 let quizState = null;
+
+// Do debugowania: localStorage.setItem('informatyczna-przygoda:debug', '1') odblokowuje ścieżki i poziomy,
+// a w quizach pozwala przejść dalej bez odpowiedzi (PageUp/PageDown skacze między pytaniami).
+const debugFreeNav = (() => {
+  try {
+    return localStorage.getItem('informatyczna-przygoda:debug') === '1';
+  } catch {
+    return false;
+  }
+})();
+if (debugFreeNav) topics.forEach((topic) => { topic.locked = false; });
 
 function readStudentName() {
   try {
@@ -191,6 +205,7 @@ function saveStudentName(name) {
     sessionStudentPoints = 0;
     sessionProgress = {};
     sessionQuizBest = {};
+    sessionQuizProgress = {};
   }
 
   try {
@@ -288,6 +303,40 @@ function readQuizBest(quizId) {
   }
 
   return normalizeStudentPoints(sessionQuizBest[quizId]);
+}
+
+// Unfinished quizzes: answers of every visited question, so the student can resume after closing the page.
+function readQuizProgress() {
+  try {
+    sessionQuizProgress = readStoredObject(studentKey(quizProgressKey));
+  } catch {
+    // Keep the progress in memory when browser storage is unavailable.
+  }
+
+  return sessionQuizProgress;
+}
+
+function writeQuizProgress(quizId, progress) {
+  sessionQuizProgress = { ...readQuizProgress(), [quizId]: progress };
+  if (!progress) delete sessionQuizProgress[quizId];
+
+  try {
+    localStorage.setItem(studentKey(quizProgressKey), JSON.stringify(sessionQuizProgress));
+  } catch {
+    // The page still works when browser storage is unavailable.
+  }
+}
+
+// Number of items in every question; saved progress is dropped when the quiz content changes.
+function quizShape(quiz) {
+  return quiz.questions.map((question) => question.items.length).join(',');
+}
+
+function saveQuizProgress() {
+  if (!quizState) return;
+  const { answers, order, sequence, bucketOrder, fields, checked, points, quiz, step, steps } = quizState;
+  steps[step] = { answers: [...answers], order, sequence, bucketOrder: bucketOrder?.map((bucket) => bucket.id), fields, checked, points };
+  writeQuizProgress(quizState.id, { shape: quizShape(quiz), step, steps });
 }
 
 function saveQuizBest(quizId, score) {
@@ -556,18 +605,28 @@ function renderQuiz(slug, index) {
     return;
   }
 
+  if (quiz.type === 'cards') {
+    renderKosmoGame(topic, index, quiz);
+    return;
+  }
+
   document.title = `${quiz.title} — Informatyczna Przygoda`;
   document.querySelector('meta[name="theme-color"]').content = topic.accent;
   app.replaceChildren(quizTemplate.content.cloneNode(true));
   applyTopicTheme(topic);
   app.querySelector('#quiz-close').href = `#/sciezka/${topic.slug}`;
 
+  const quizId = quiz.id || `${topic.slug}/${index}`;
+  const saved = readQuizProgress()[quizId];
+  const resume = saved?.shape === quizShape(quiz) && Array.isArray(saved.steps);
+
   quizState = {
     topic,
     index,
     quiz,
-    step: 0,
-    score: 0,
+    id: quizId,
+    step: resume ? Math.min(Math.max(Number(saved.step) || 0, 0), quiz.questions.length - 1) : 0,
+    steps: resume ? saved.steps : [],
     total: quiz.questions.reduce((sum, question) => sum + question.items.reduce((itemSum, item) => itemSum + itemPoints(item), 0), 0)
   };
 
@@ -582,6 +641,8 @@ function renderQuiz(slug, index) {
   body.addEventListener('cut', handlePracticeClipboard);
   body.addEventListener('paste', handlePracticeClipboard);
   app.querySelector('#quiz-check').addEventListener('click', handleQuizCheck);
+  app.querySelector('#quiz-back').addEventListener('click', handleQuizBack);
+  app.querySelector('#quiz-fix').addEventListener('click', handleQuizFix);
 
   renderQuizStep();
   syncStudentProfile();
@@ -602,25 +663,43 @@ function renderQuizStep() {
   const question = currentQuestion();
   const { quiz, step } = quizState;
   const items = question.items.map((_, itemIndex) => itemIndex);
+  const saved = quizState.steps[step];
+  const savedBuckets = saved?.bucketOrder?.map((id) => question.buckets?.find((bucket) => bucket.id === id)).filter(Boolean);
 
-  Object.assign(quizState, {
-    answers: new Map(),
-    selected: null,
-    checked: false,
-    order: question.shuffle === false ? items : shuffle(items),
-    sequence: [],
-    bucketOrder: question.match && question.buckets ? shuffle(question.buckets) : question.buckets
-  });
-  if (question.type === 'inputs') {
-    question.items.forEach((item, itemIndex) => {
-      if (item.value) quizState.answers.set(itemIndex, item.value);
+  if (saved) {
+    // A question visited earlier: bring back its answers (and the check result, if it was checked).
+    Object.assign(quizState, {
+      answers: new Map(saved.answers),
+      selected: null,
+      checked: Boolean(saved.checked),
+      points: saved.points || 0,
+      order: saved.order,
+      sequence: saved.sequence || [],
+      bucketOrder: savedBuckets?.length === question.buckets?.length ? savedBuckets : question.buckets,
+      fields: saved.fields
     });
-  }
-  if (question.type === 'practice') {
-    quizState.fields = question.items.map((item, itemIndex) => {
-      quizState.answers.set(itemIndex, false);
-      return { left: item.left, right: '' };
+  } else {
+    Object.assign(quizState, {
+      answers: new Map(),
+      selected: null,
+      checked: false,
+      points: 0,
+      order: question.shuffle === false ? items : shuffle(items),
+      sequence: [],
+      bucketOrder: question.match && question.buckets ? shuffle(question.buckets) : question.buckets,
+      fields: undefined
     });
+    if (question.type === 'inputs') {
+      question.items.forEach((item, itemIndex) => {
+        if (item.value) quizState.answers.set(itemIndex, item.value);
+      });
+    }
+    if (question.type === 'practice') {
+      quizState.fields = question.items.map((item, itemIndex) => {
+        quizState.answers.set(itemIndex, false);
+        return { left: item.left, right: '' };
+      });
+    }
   }
 
   setQuizProgress(step / quiz.questions.length);
@@ -635,8 +714,11 @@ function renderQuizStep() {
   footer.className = 'quiz-footer';
   app.querySelector('#quiz-feedback').replaceChildren();
   app.querySelector('#quiz-check').textContent = 'Sprawdź';
+  app.querySelector('#quiz-back').hidden = step === 0;
+  app.querySelector('#quiz-fix').hidden = true;
 
   renderQuizBody();
+  if (quizState.checked) renderQuizFeedback();
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
@@ -722,11 +804,12 @@ function renderQuizBody() {
 
   app.querySelector('.quiz-view').classList.toggle('has-selection', quizState.selected !== null);
   updateQuizCheck();
+  saveQuizProgress();
   if (focusKey) body.querySelector(`[data-key="${focusKey}"]`)?.focus();
 }
 
 function updateQuizCheck() {
-  app.querySelector('#quiz-check').disabled = !quizState.checked && quizState.answers.size < currentQuestion().items.length;
+  app.querySelector('#quiz-check').disabled = !debugFreeNav && !quizState.checked && quizState.answers.size < currentQuestion().items.length;
 }
 
 function createChip(question, itemIndex) {
@@ -1048,6 +1131,7 @@ function handleQuizInput(event) {
     if (value) quizState.answers.set(itemIndex, value);
     else quizState.answers.delete(itemIndex);
     updateQuizCheck();
+    saveQuizProgress();
     return;
   }
 
@@ -1057,6 +1141,7 @@ function handleQuizInput(event) {
     const done = isPracticeDone(question.items[itemIndex], field);
     quizState.answers.set(itemIndex, done);
     input.closest('.practice-row').classList.toggle('is-done', done);
+    saveQuizProgress();
   }
 }
 
@@ -1461,18 +1546,34 @@ function handleQuizCheck() {
     return;
   }
 
-  const scores = question.type === 'order'
-    ? orderScores(question)
-    : question.items.map((item, itemIndex) => scoreItem(item, quizState.answers.get(itemIndex)));
-  const correct = scores.reduce((sum, score) => sum + score, 0);
-  const total = question.items.length;
-  const points = question.items.reduce((sum, item, itemIndex) => sum + scores[itemIndex] * itemPoints(item), 0);
-  const maxPoints = question.items.reduce((sum, item) => sum + itemPoints(item), 0);
-  quizState.score += points;
+  const { scores, correct, total, points } = questionResult(question);
+  quizState.points = points;
   quizState.checked = true;
   quizState.selected = null;
   renderQuizBody();
+  renderQuizFeedback();
+  app.querySelector('#quiz-check').focus();
 
+  showReward(points, correct, scores.filter((score) => score === 1).length, total, question.rewardGif);
+}
+
+function questionResult(question) {
+  const scores = question.type === 'order'
+    ? orderScores(question)
+    : question.items.map((item, itemIndex) => scoreItem(item, quizState.answers.get(itemIndex)));
+  return {
+    scores,
+    correct: scores.reduce((sum, score) => sum + score, 0),
+    total: question.items.length,
+    points: question.items.reduce((sum, item, itemIndex) => sum + scores[itemIndex] * itemPoints(item), 0),
+    maxPoints: question.items.reduce((sum, item) => sum + itemPoints(item), 0)
+  };
+}
+
+// Stopka po sprawdzeniu: wynik pytania, „Dalej” i „Popraw”.
+function renderQuizFeedback() {
+  const { quiz, step } = quizState;
+  const { correct, total, points, maxPoints } = questionResult(currentQuestion());
   const allCorrect = correct === total;
   app.querySelector('#quiz-footer').classList.add(allCorrect ? 'is-correct' : 'is-partial');
 
@@ -1484,16 +1585,31 @@ function handleQuizCheck() {
     : `${formatPoints(points)} z ${maxPoints} pkt. Sprawdź poprawione odpowiedzi powyżej.`;
   app.querySelector('#quiz-feedback').replaceChildren(heading, detail);
 
-  const button = app.querySelector('#quiz-check');
-  button.textContent = quizState.step === quiz.questions.length - 1 ? 'Zobacz wynik' : 'Dalej';
-  button.focus();
+  app.querySelector('#quiz-check').textContent = step === quiz.questions.length - 1 ? 'Zobacz wynik' : 'Dalej';
+  app.querySelector('#quiz-fix').hidden = allCorrect;
+}
 
-  showReward(points, correct, scores.filter((score) => score === 1).length, total, question.rewardGif);
+function handleQuizBack() {
+  if (!quizState || quizState.step === 0) return;
+  quizState.step -= 1;
+  renderQuizStep();
+}
+
+// Odblokowuje sprawdzone pytanie z zachowanymi odpowiedziami; punkty liczą się od nowa po ponownym sprawdzeniu.
+function handleQuizFix() {
+  if (!quizState?.checked) return;
+  Object.assign(quizState, { checked: false, points: 0, selected: null });
+  app.querySelector('#quiz-footer').className = 'quiz-footer';
+  app.querySelector('#quiz-feedback').replaceChildren();
+  app.querySelector('#quiz-check').textContent = 'Sprawdź';
+  app.querySelector('#quiz-fix').hidden = true;
+  renderQuizBody();
 }
 
 function renderQuizSummary() {
-  const { topic, index, quiz, score, total } = quizState;
-  const quizId = quiz.id || `${topic.slug}/${index}`;
+  const { topic, index, quiz, steps, total, id: quizId } = quizState;
+  const score = steps.reduce((sum, saved) => sum + (saved?.checked ? saved.points || 0 : 0), 0);
+  writeQuizProgress(quizId, null);
   const earned = Math.max(0, score - readQuizBest(quizId));
   const percent = Math.round((score / total) * 100);
 
@@ -1543,6 +1659,7 @@ function route() {
   stopColoringGame();
   stopCodeGame();
   stopBoardGame();
+  stopKosmoGame();
   stopPivotAnimator();
   closeReward();
   if (match && topics.find((topic) => topic.slug === match[1])?.locked) {
@@ -1552,6 +1669,17 @@ function route() {
   if (match?.[2]) renderQuiz(match[1], Number(match[2]) - 1);
   else if (match) renderPath(match[1]);
   else renderHome();
+}
+
+if (debugFreeNav) {
+  document.addEventListener('keydown', (event) => {
+    if (!quizState?.quiz.questions || (event.key !== 'PageDown' && event.key !== 'PageUp')) return;
+    const step = quizState.step + (event.key === 'PageDown' ? 1 : -1);
+    if (step < 0 || step >= quizState.quiz.questions.length) return;
+    event.preventDefault();
+    quizState.step = step;
+    renderQuizStep();
+  });
 }
 
 dialog.querySelector('.dialog-close').addEventListener('click', () => dialog.close());

@@ -478,8 +478,11 @@ const coloringTask = {
     { id: 'klocki', label: 'Świat z klocków', src: 'assets/coloring/klocki.svg' },
     { id: 'kolarstwo', label: 'Wyścig kolarski', src: 'assets/coloring/kolarstwo.svg' },
     { id: 'wisla', label: 'Mecz Białej Gwiazdy', src: 'assets/coloring/wisla.svg' },
-    { id: 'stworki', label: 'Wyprawa ze stworkami', src: 'assets/coloring/stworki.svg' },
-    { id: 'aniimo', label: 'Przygoda z Aniimo', src: 'assets/coloring/aniimo.svg' }
+    { id: 'stworki', label: 'Wyprawa ze stworkami', src: 'assets/coloring/stworki.svg?v=2', revision: 2 },
+    { id: 'aniimo', label: 'Przygoda z Aniimo', src: 'assets/coloring/aniimo.svg' },
+    { id: 'kot-potter', label: 'Kot Harry Potter', src: 'assets/coloring/kot-potter.svg' },
+    { id: 'bubble-tea', label: 'Bubble tea', src: 'assets/coloring/bubble-tea.svg' },
+    { id: 'dumplings', label: 'Dumplings – gniotek antystresowy', src: 'assets/coloring/dumplings.svg' }
   ]
 };
 
@@ -514,7 +517,16 @@ const robotDrawingTask = {
   prompt: 'Narysuj robota-pomocnika',
   tone: 'orange',
   intro: '<b>Stwórz</b> rysunek <b>robota</b>, który Ci w czymś <b>pomaga</b>.',
-  layout: '<img class="ct-art" src="assets/task-art/paint-photopea.png" alt="Ekran programu Paint przełamany po skosie z ekranem Photopea" />',
+  layout: `
+    <img class="ct-art" src="assets/task-art/paint-photopea.png" alt="Ekran programu Paint przełamany po skosie z ekranem Photopea" />
+    <div class="ct-launch-actions" aria-label="Wybierz program do narysowania robota">
+      <a class="primary-button ct-launch-button ct-launch-button-paint" href="ms-paint:">
+        <span aria-hidden="true">🎨</span> Otwórz Paint
+      </a>
+      <a class="primary-button ct-launch-button ct-launch-button-photopea" href="https://www.photopea.com/" target="_blank" rel="noopener">
+        <span aria-hidden="true">🖼️</span> Otwórz Photopea <span aria-hidden="true">↗</span>
+      </a>
+    </div>`,
   doneHint: 'Twój robot ma kształty, kolory, imię i jest zapisany jako PNG.',
   reward: 30,
   rewardGif: 'assets/reward-gifs/dance-tanec.gif',
@@ -587,7 +599,9 @@ const scottieGoTask = {
   doneHint: 'Rozwiązałeś zagadki z pierwszego poziomu Scottie Go!',
   reward: 30,
   rewardGif: 'assets/reward-gifs/cat-dance-sofa.gif',
-  layout: '<img class="ct-art" src="assets/task-art/scottie-go.png" width="640" height="441" alt="Robot Scottie i ekran gry Scottie Go! na tablecie" />',
+  layout: `<img class="ct-art" src="assets/task-art/scottie-go.png" width="640" height="441" alt="Robot Scottie i ekran gry Scottie Go! na tablecie" />
+    <p class="ct-link"><a class="primary-button" href="#/sciezka/programowanie/zadanie/9">Rozpocznij <span aria-hidden="true">→</span></a></p>
+    <p class="ct-link-note">lub poproś o grę planszową nauczyciela</p>`,
   steps: []
 };
 
@@ -619,6 +633,583 @@ const hourOfCodeTask = {
   rewardGif: 'assets/reward-gifs/kevin-dance.gif',
   layout: '<img class="ct-art" src="assets/task-art/hoc-angry-birds.png" width="402" height="406" alt="Labirynt z czerwonym ptakiem Angry Birds i zieloną świnką" />',
   steps: []
+};
+
+// Gra „Kosmo Kroki” (na wzór Scottie Go!): dziecko układa program z kart, a kosmita Kosmo wykonuje go na planszy.
+// Mapa: . grunt, # skała, ~ kałuża śluzu (nie wejdziesz, ale przeskoczysz; Robo po niej jeździ), o krater
+// (przeskocz albo zasyp skrzynią), B skrzynia, K Kosmo, D Robo, C kryształ, R rakieta, S Kosmo stoi na rakiecie.
+// Cel: zebrać wszystkie kryształy kartą „Podnieś” i skończyć program z Kosmo na rakiecie.
+// Poziomy idą parami: pierwszy tłumaczy nowe pojęcie (concept), drugi wymaga, by sprytnie go użyć.
+// dir — w którą stronę patrzy Kosmo na starcie (N E S W), roboDir — Robo. cards — karty sugerowane na poziomie,
+// conds — warunki kart Jeśli wśród sugerowanych, numbers — cyfry 0–9 wśród sugerowanych kart,
+// func — pasek funkcji i karta „Funkcja”, recursion — funkcja może wołać samą siebie.
+// stars — [na 3 gwiazdki, na 2 gwiazdki]: najwięcej kart w programie (razem z kartami w funkcjach).
+// solution / solutionFunc — wzorcowe rozwiązanie (niewyświetlane, sprawdzane testem):
+// F3 idź 3 pola, L / R obrót w lewo / w prawo, T podnieś, J przeskocz, B przesuń, G podaj, W rzuć, U unikaj,
+// Z przełącz (Zk / Zn / Zp / Zr — na zielonego, niebieskiego, różowego Kosmo, na Robo), X funkcja,
+// P3( … ) powtórz 3 razy, Ic( … ) / If( … ) / Io( … ) / Ib( … ) jeśli kryształ / wolne / krater / skrzynia,
+// Ec( … ) / Em( … ) gdy złapiesz przedmiot / gdy spada meteoryt.
+// Mapa ma też: N niebieski Kosmo, P różowy Kosmo, E bateria (trzeba ją dostarczyć do rakiety).
+// dirs — kierunek na starcie innych postaci, np. { blue: 'N' }. events — zdarzenia kart Gdy wśród sugerowanych.
+// meteors — tyle meteorytów spada za każdym razem na inne losowe pola gruntu.
+// random — losowa plansza przy każdym wejściu (gwiazdki liczy solver, solution brak):
+//   path — size [kolumny, wiersze], rocks (ile skał), trzeba przejść najkrótszą drogą;
+//   sort — kryształy C z map dostają losowe liczby 1–max (scatter: tyle kryształów w losowych miejscach),
+//   limit — najwięcej kart w najkrótszym programie (dłuższe plansze są losowane od nowa),
+//   sort: 'asc' / 'desc' — podnosi się je od najmniejszej / od największej.
+const kosmoKrokiGame = {
+  type: 'cards',
+  id: 'programowanie/gra-kosmo-kroki',
+  title: 'Gra: Kosmo Kroki',
+  prompt: 'Pomóż Kosmo wrócić do rakiety',
+  doneHint: 'Układasz prawdziwe programy: polecenia po kolei, pętle, warunki, funkcje i rekurencję. Tak samo myśli programista.',
+  reward: 70,
+  levels: [
+    {
+      title: 'Pierwsze kroki',
+      concept: { name: 'Program', text: 'Program to lista poleceń. Kosmo wykonuje karty po kolei, od pierwszej do ostatniej. Karta <b>Idź</b> to jeden krok do przodu — tam, gdzie patrzy Kosmo.' },
+      task: 'Doprowadź Kosmo do rakiety.',
+      hint: 'Kliknij kartę <b>Idź</b> tyle razy, ile pól dzieli Kosmo od rakiety. Potem ▶ Start.',
+      fact: 'Komputer robi dokładnie to, co mu każesz — ani mniej, ani więcej. Dlatego program musi być dokładny.',
+      cards: ['step'],
+      dir: 'E',
+      stars: [4, 5],
+      map: [
+        '.#....',
+        'K...R.',
+        '...#..'
+      ],
+      solution: 'F F F F'
+    },
+    {
+      title: 'Zakręt',
+      concept: { name: 'Obrót', text: 'Karty <b>W lewo</b> i <b>W prawo</b> obracają Kosmo w miejscu. Kosmo nie rusza się z pola — zmienia tylko kierunek, w którym patrzy.' },
+      task: 'Skręć i dojdź do rakiety.',
+      hint: 'Patrz, gdzie Kosmo ma strzałkę. Obrót w prawo to obrót tak jak wskazówki zegara.',
+      cards: ['step', 'left', 'right'],
+      dir: 'E',
+      stars: [5, 6],
+      map: [
+        'K..#.',
+        '.~...',
+        '..R#.'
+      ],
+      solution: 'F F R F F'
+    },
+    {
+      title: 'Ślepy zaułek',
+      task: 'Dojdź do rakiety.',
+      hint: 'Kosmo patrzy w prawo, ale tam stoi ściana. Najpierw obróć się w stronę wolnej drogi!',
+      fact: 'Programista zanim napisze program, najpierw patrzy na całą mapę i planuje drogę.',
+      cards: ['step', 'left', 'right'],
+      dir: 'E',
+      stars: [10, 12],
+      map: [
+        '..#R',
+        'K#..',
+        '.#.#',
+        '....'
+      ],
+      solution: 'R F2 L F2 L F2 R F L F'
+    },
+    {
+      title: 'Kryształ',
+      concept: { name: 'Akcja', text: 'Karta <b>Podnieś</b> zabiera kryształ z pola, na którym stoi Kosmo. Rakieta poleci dopiero, gdy Kosmo zbierze wszystkie kryształy.' },
+      task: 'Zbierz kryształ i wróć do rakiety.',
+      hint: 'Najpierw wejdź na kryształ, potem połóż kartę <b>Podnieś</b>.',
+      cards: ['step', 'left', 'right', 'take'],
+      dir: 'E',
+      stars: [4, 5],
+      map: [
+        '..#..',
+        'KC.R.',
+        '.~...'
+      ],
+      solution: 'F T F F'
+    },
+    {
+      title: 'Najpierw daleko',
+      task: 'Zbierz oba kryształy i dojdź do rakiety.',
+      hint: 'Bliski kryształ leży obok rakiety. Po który warto pójść najpierw?',
+      fact: 'Wybór kolejności to ważna część planowania. Kurierzy i GPS-y też szukają najkrótszej trasy.',
+      cards: ['step', 'left', 'right', 'take'],
+      dir: 'E',
+      stars: [9, 11],
+      map: [
+        '..#..#.',
+        'C..K.CR',
+        '.~...#.'
+      ],
+      solution: 'L L F3 T L L F5 T F'
+    },
+    {
+      title: 'Liczby na kartach',
+      concept: { name: 'Parametr', text: 'Połóż po prawej stronie karty <b>Idź</b> bloczki z cyframi — <b>1</b> i <b>2</b> obok siebie to 12. <b>Idź 5</b> to pięć kroków na jednej karcie. Taka liczba to <b>parametr</b> polecenia.' },
+      task: 'Zbierz kryształ i dojdź do rakiety jak najmniejszą liczbą kart.',
+      hint: 'Policz pola do skrętu i ustaw tę liczbę na karcie Idź.',
+      fact: 'Parametry ma prawie każde polecenie w programowaniu — np. jak daleko iść, jaki kolor wybrać albo ile razy coś zrobić.',
+      cards: ['step', 'left', 'right', 'take'],
+      numbers: true,
+      dir: 'E',
+      stars: [6, 8],
+      map: [
+        'K.....#.',
+        '.####...',
+        'R....C..'
+      ],
+      solution: 'F5 R F2 T R F5'
+    },
+    {
+      title: 'Wąż',
+      task: 'Zbierz oba kryształy i dojdź do rakiety.',
+      hint: 'Każdy prosty odcinek to jedna karta Idź z liczbą. Kryształ po drodze dzieli odcinek na dwa.',
+      cards: ['step', 'left', 'right', 'take'],
+      numbers: true,
+      dir: 'E',
+      stars: [9, 11],
+      map: [
+        'K......#',
+        '######.#',
+        'C.....C.',
+        '.######.',
+        'R.......'
+      ],
+      solution: 'F6 R F2 T R F6 T L F2'
+    },
+    {
+      title: 'Krater',
+      concept: { name: 'Skok', text: 'Karta <b>Przeskocz</b> przenosi Kosmo nad jednym polem — nad kraterem, kałużą śluzu albo zwykłym gruntem. Kosmo ląduje dwa pola dalej. Skały i skrzynie są za wysokie.' },
+      task: 'Przeskocz przeszkody i dojdź do rakiety.',
+      hint: 'Do krateru nie wolno wejść, ale można go przeskoczyć. Śluz też!',
+      cards: ['step', 'left', 'right', 'jump'],
+      numbers: true,
+      dir: 'E',
+      stars: [6, 7],
+      map: [
+        '.#...#.',
+        'Ko.~.#.',
+        '...#..R'
+      ],
+      solution: 'J J R F L F2'
+    },
+    {
+      title: 'Skoczek',
+      task: 'Zbierz oba kryształy i dojdź do rakiety.',
+      hint: 'Skok może wylądować prosto na krysztale. Uważaj: przeskoczony kryształ zostaje na miejscu!',
+      fact: 'W grach platformowych, takich jak Mario, skok też jest po prostu poleceniem w programie.',
+      cards: ['step', 'left', 'right', 'jump', 'take'],
+      numbers: true,
+      dir: 'E',
+      stars: [11, 13],
+      map: [
+        '...#.C.',
+        'KoC~.#R',
+        '..#.o..'
+      ],
+      solution: 'J T J L F R F T F R F'
+    },
+    {
+      title: 'Skrzynia',
+      concept: { name: 'Przesuwanie', text: 'Karta <b>Przesuń</b> pcha skrzynię stojącą przed Kosmo o jedno pole, a Kosmo idzie za nią. Za skrzynią musi być wolne pole.' },
+      task: 'Odsuń skrzynię z drogi i dojdź do rakiety.',
+      hint: 'Skrzynia stoi w korytarzu. Pchnij ją tak daleko, żeby odsłoniła zakręt w dół.',
+      cards: ['step', 'left', 'right', 'jump', 'push'],
+      numbers: true,
+      dir: 'E',
+      stars: [7, 8],
+      map: [
+        '..#..',
+        'K.B..',
+        '.~#.R'
+      ],
+      solution: 'F B B R F L F'
+    },
+    {
+      title: 'Most ze skrzyni',
+      task: 'Zbierz kryształ i dojdź do rakiety.',
+      hint: 'Dwóch kraterów obok siebie nie przeskoczysz. Ale skrzynia wepchnięta do krateru zasypuje go!',
+      fact: 'Programiści często używają rzeczy w nowy sposób — tak jak skrzynia, która staje się mostem.',
+      cards: ['step', 'left', 'right', 'jump', 'take', 'push'],
+      numbers: true,
+      dir: 'E',
+      stars: [11, 12],
+      map: [
+        '..#..#.',
+        'K.Boo.R',
+        '..#.~C.'
+      ],
+      solution: 'F B F J R F T L F L F'
+    },
+    {
+      title: 'Schodki',
+      concept: { name: 'Pętla', text: 'Karta <b>Powtórz</b> wykonuje karty w swoim środku kilka razy. Ile razy — mówią bloczki z cyframi po jej prawej stronie. Powtarzanie poleceń w programie to <b>pętla</b>.' },
+      task: 'Zejdź po schodkach do rakiety — użyj karty Powtórz.',
+      hint: 'Jeden schodek to: krok, obrót, krok, obrót. Włóż te karty do środka pętli i powtórz je 4 razy.',
+      fact: 'Pętle to jedna z największych sił komputera: może powtarzać to samo miliony razy i nigdy się nie nudzi.',
+      cards: ['step', 'left', 'right', 'repeat'],
+      numbers: true,
+      dir: 'E',
+      stars: [5, 6],
+      map: [
+        'K.#..',
+        '#..#.',
+        '.#..#',
+        '..#..',
+        '...#R'
+      ],
+      solution: 'P4( F R F L )'
+    },
+    {
+      title: 'Pętla w pętli',
+      task: 'Okrąż skały, zbierz siedem kryształów i wróć na rakietę.',
+      hint: 'Skok i podnieś, skok i podnieś — dwa razy na boku. Bok też się powtarza! Pętlę można włożyć do środka innej pętli.',
+      fact: 'Pętla w pętli to sposób, w jaki komputer rysuje np. szachownicę: rząd po rzędzie, pole po polu.',
+      cards: ['step', 'left', 'right', 'jump', 'take', 'repeat'],
+      numbers: true,
+      dir: 'E',
+      stars: [8, 10],
+      map: [
+        'SoCoC',
+        'o###o',
+        'C#~#C',
+        'o###o',
+        'CoCoC'
+      ],
+      solution: 'P3( P2( J T ) R ) J T J'
+    },
+    {
+      title: 'Funkcja',
+      concept: { name: 'Funkcja', text: 'Ułóż karty w pasku <b>Funkcja</b>. Każda karta <b>⭐ Funkcja</b> w programie wykonuje cały ten pasek. To jak nowe polecenie, które wymyślasz sam!' },
+      task: 'Zbierz trzy rzędy kryształów i dojdź do rakiety.',
+      hint: 'Zbieranie trzech kryształów zapisz raz w pasku Funkcja. W programie użyj karty ⭐ trzy razy, a między nimi skręcaj.',
+      fact: 'Funkcje mają nazwy, np. „zbierz rząd”. Dzięki nim program czyta się jak opowiadanie.',
+      cards: ['step', 'left', 'right', 'take', 'repeat', 'call'],
+      numbers: true,
+      func: true,
+      dir: 'E',
+      stars: [13, 15],
+      map: [
+        'KCCC#',
+        'CCC.~',
+        '.CCCR',
+        '#..#.'
+      ],
+      solution: 'X R F R X L F L X F',
+      solutionFunc: 'P3( F T )'
+    },
+    {
+      title: 'Cztery wyprawy',
+      task: 'Kosmo stoi na rakiecie. Zbierz cztery kryształy i wróć na rakietę.',
+      hint: 'Wyprawa po jeden kryształ: przeskocz, podnieś, zawróć, przeskocz z powrotem i obróć się w lewo. Zrób z niej funkcję i powtórz 4 razy.',
+      fact: 'Prawdziwe łaziki na Marsie też dostają programy z Ziemi — listę poleceń, które wykonują krok po kroku.',
+      cards: ['step', 'left', 'right', 'jump', 'take', 'repeat', 'call'],
+      numbers: true,
+      func: true,
+      dir: 'E',
+      stars: [8, 10],
+      map: [
+        '#~C~#',
+        '.#o#.',
+        'CoSoC',
+        '.#o#~',
+        '#~C~#'
+      ],
+      solution: 'P4( X )',
+      solutionFunc: 'J T R R J L'
+    },
+    {
+      title: 'Jeśli',
+      concept: { name: 'Warunek', text: 'Karta <b>Jeśli</b> najpierw sprawdza, czy coś jest prawdą. Co sprawdzić, mówi przedmiot włożony w jej gniazdo — np. <b>Jeśli</b> + <b>💎 kryształ</b>: czy Kosmo stoi na krysztale. Karty w jej środku wykonają się tylko wtedy, gdy tak. Gdy nie — Kosmo je pomija.' },
+      task: 'Zbierz wszystkie kryształy i dojdź do rakiety.',
+      hint: 'Kryształy leżą nierówno. W pętli: krok, a potem <b>Jeśli kryształ</b> → Podnieś.',
+      fact: 'Warunki są wszędzie: „jeśli pada, weź parasol”. Komputer sprawdza je miliony razy na sekundę.',
+      cards: ['step', 'take', 'repeat', 'if'],
+      conds: ['crystal'],
+      numbers: true,
+      dir: 'E',
+      stars: [4, 6],
+      map: [
+        '..#...#...',
+        'KC.CC..C.R',
+        '.~...#..~.'
+      ],
+      solution: 'P9( F Ic( T ) )'
+    },
+    {
+      title: 'Kratery w kratkę',
+      task: 'Zbierz kryształy i dojdź do rakiety.',
+      hint: 'Jedna pętla wystarczy: Jeśli kryształ → Podnieś, Jeśli krater → Przeskocz, Jeśli wolne → Idź. Kolejność kart w pętli ma znaczenie! Za dużo powtórzeń nie szkodzi.',
+      fact: 'Dobry program działa nawet wtedy, gdy powtórzy się za dużo razy — bo warunki pilnują, co robić.',
+      cards: ['step', 'jump', 'take', 'repeat', 'if'],
+      conds: ['crystal', 'free', 'crater'],
+      numbers: true,
+      dir: 'E',
+      stars: [7, 8],
+      map: [
+        '.#...~...#.',
+        'K.o.Co.o.CR',
+        '...#...#...'
+      ],
+      solution: 'P5( Ic( T ) Io( J ) If( F ) )'
+    },
+    {
+      title: 'Rekurencja',
+      concept: { name: 'Rekurencja', text: 'Funkcja może wołać <b>samą siebie</b> — to <b>rekurencja</b>. Funkcja „Idź do ściany”: <b>Jeśli wolne</b> → Idź i znowu „Idź do ściany”. Karta Jeśli mówi jej, kiedy przestać.' },
+      task: 'Zbierz kryształy i dojdź do rakiety.',
+      hint: 'W funkcji: Jeśli kryształ → Podnieś, potem Jeśli wolne → Idź i ⭐ Funkcja. W programie: funkcja, obrót w prawo, funkcja.',
+      fact: 'Rekurencją komputer przeszukuje np. foldery: zagląda do folderu, a w nim do każdego folderu tak samo.',
+      cards: ['step', 'right', 'take', 'if', 'call'],
+      conds: ['crystal', 'free'],
+      func: true,
+      recursion: true,
+      dir: 'E',
+      stars: [8, 10],
+      map: [
+        'KC..C.C',
+        '.#.#.#.',
+        '#~#.~#C',
+        '..#.#.R'
+      ],
+      solution: 'X R X',
+      solutionFunc: 'Ic( T ) If( F X )'
+    },
+    {
+      title: 'Tam i z powrotem',
+      task: 'Kosmo stoi na rakiecie. Zbierz cztery kryształy i wróć na rakietę.',
+      hint: 'Rekurencja pamięta drogę! Funkcja: Jeśli wolne → (Idź, ⭐, Idź), a potem Jeśli kryształ → (Podnieś, zawróć). Każde „Idź” po powrocie z ⭐ prowadzi Kosmo z powrotem. W programie: Powtórz 4 × (⭐, W lewo).',
+      fact: 'Każde wywołanie funkcji komputer zapisuje na stosie — jak talerze. Potem wraca, zdejmując je po kolei.',
+      cards: ['step', 'left', 'right', 'take', 'repeat', 'if', 'call'],
+      conds: ['crystal', 'free'],
+      numbers: true,
+      func: true,
+      recursion: true,
+      dir: 'E',
+      stars: [11, 14],
+      map: [
+        '.#~C~#.',
+        '..#.#..',
+        '#C.S..C',
+        '.#~C#~.',
+        '..#~#..'
+      ],
+      solution: 'P4( X L )',
+      solutionFunc: 'If( F X F ) Ic( T R R )'
+    },
+    {
+      title: 'Robo',
+      concept: { name: 'Zmiana postaci', text: 'Na planszy jest też robot <b>Robo</b>. Jeździ po śluzie, ale nie umie skakać. Karta <b>Zmień postać</b> sprawia, że kolejne karty wykonuje druga postać.' },
+      task: 'Zbierz kryształ i doprowadź Kosmo do rakiety.',
+      hint: 'Kosmo nie dojdzie do kryształu przez śluz. Zmień postać na Robo, zbierz nim kryształ, a potem wróć do Kosmo.',
+      fact: 'W programach jest wiele obiektów naraz — postacie w grze, okna, przyciski. Program mówi, który z nich ma działać.',
+      cards: ['step', 'left', 'right', 'jump', 'take', 'swap'],
+      numbers: true,
+      dir: 'E',
+      roboDir: 'E',
+      stars: [5, 6],
+      map: [
+        'D~~C#',
+        '#~~~#',
+        '#~~~#',
+        'K...R'
+      ],
+      solution: 'Z F3 T Z F4'
+    },
+    {
+      title: 'Drużyna',
+      task: 'Zbierzcie wszystkie kryształy i doprowadźcie Kosmo do rakiety.',
+      hint: 'Ta sama funkcja działa dla każdej postaci! Robo zbiera górny rząd i wpycha skrzynię do krateru. Kosmo zbiera dolny rząd, przechodzi po zasypanym kraterze i przeskakuje drugi.',
+      fact: 'Jedną funkcję może wykonać wiele obiektów — tak programiści nie piszą tego samego dwa razy.',
+      cards: ['step', 'left', 'right', 'jump', 'take', 'push', 'swap', 'repeat', 'call'],
+      numbers: true,
+      func: true,
+      dir: 'E',
+      roboDir: 'E',
+      stars: [12, 14],
+      map: [
+        'DCCC~~#',
+        '~~~~B~#',
+        'KCCCooR',
+        '#~~#~~#'
+      ],
+      solution: 'Z X F R B Z X F J',
+      solutionFunc: 'P3( F T )'
+    },
+    {
+      title: 'Najkrótsza droga',
+      concept: { name: 'Najkrótsza droga', text: 'Do rakiety prowadzi wiele dróg, ale tylko niektóre są <b>najkrótsze</b>. Policz pola, zanim ruszysz! Skały stoją za każdym razem gdzie indziej — kliknij <b>🎲 Nowa plansza</b>, by zagrać jeszcze raz.' },
+      task: 'Dojdź do rakiety najkrótszą drogą.',
+      hint: 'Szukaj drogi od rakiety wstecz: pola obok rakiety są o 1 krok od niej, ich sąsiedzi o 2… Tak samo liczy GPS.',
+      fact: 'Szukanie najkrótszej drogi to zadanie dla algorytmu. Nawigacja w telefonie rozwiązuje je w ułamku sekundy dla milionów ulic.',
+      cards: ['step', 'left', 'right'],
+      numbers: true,
+      random: 'path',
+      size: [8, 5],
+      rocks: 0.34,
+      limit: 13,
+      dir: 'E',
+      stars: [8, 10],
+      map: [
+        'K..#....',
+        '.#.#.##.',
+        '.#...#..',
+        '.####..#',
+        '......#R'
+      ]
+    },
+    {
+      title: 'Sortowanie',
+      concept: { name: 'Sortowanie', text: 'Na kryształach są liczby. Podnoś je <b>po kolei: od najmniejszej do największej</b> — to <b>sortowanie</b>. Liczby są za każdym razem inne!' },
+      task: 'Zbierz kryształy od najmniejszej liczby i wróć do rakiety.',
+      hint: 'Najpierw znajdź najmniejszą liczbę i zaplanuj drogę do niej. Potem następną. Zła kolejność = Kosmo się zatrzyma.',
+      fact: 'Komputery ciągle coś sortują: piosenki po tytule, zdjęcia po dacie, wyniki w grze od najlepszego.',
+      cards: ['step', 'left', 'right', 'take'],
+      numbers: true,
+      random: 'sort',
+      sort: 'asc',
+      max: 20,
+      limit: 18,
+      dir: 'E',
+      stars: [12, 14],
+      map: [
+        'KC..C..',
+        '.#.#.#.',
+        '..C..CR'
+      ]
+    },
+    {
+      title: 'Od największej',
+      task: 'Zbierz kryształy od największej liczby do najmniejszej i wróć do rakiety.',
+      hint: 'Tym razem odwrotnie — zacznij od największej liczby. Kryształy leżą za każdym razem gdzie indziej.',
+      fact: 'Sortować można w obie strony: rosnąco (1, 2, 3…) albo malejąco (…3, 2, 1). Tabela wyników w grze to sortowanie malejące.',
+      cards: ['step', 'left', 'right', 'take'],
+      numbers: true,
+      random: 'sort',
+      sort: 'desc',
+      scatter: 4,
+      max: 50,
+      limit: 18,
+      dir: 'E',
+      stars: [16, 18],
+      map: [
+        'K.....',
+        '.#..#.',
+        '..#...',
+        '.....R'
+      ]
+    },
+    {
+      title: 'Trzech Kosmo',
+      concept: { name: 'Przełącz na postać', text: 'Przyleciało trzech Kosmo: zielony, niebieski i różowy. Włóż w gniazdo karty <b>Przełącz</b> bloczek z postacią — kolejne karty wykona właśnie ona.' },
+      task: 'Każdy Kosmo zbiera swój kryształ. Różowy wraca do rakiety.',
+      hint: 'Zielony zaczyna. Potem <b>Przełącz</b> + niebieski Kosmo, a na końcu <b>Przełącz</b> + różowy Kosmo.',
+      fact: 'W grach strategicznych klikasz jednostkę, a potem wydajesz jej rozkazy — to właśnie przełączanie postaci.',
+      cards: ['step', 'left', 'right', 'take', 'swap'],
+      numbers: true,
+      dir: 'E',
+      stars: [9, 11],
+      map: [
+        'K..C~~~',
+        '~~~~~~~',
+        'N.C~~~~',
+        '~~~~~~~',
+        'P...C.R'
+      ],
+      solution: 'F3 T Zn F2 T Zp F4 T F2'
+    },
+    {
+      title: 'Podaj dalej',
+      concept: { name: 'Przedmiot', text: 'Rakieta potrzebuje <b>baterii</b> 🔋. Karta <b>Podnieś</b> bierze ją do rąk, a <b>Podaj</b> oddaje postaci, która stoi tuż przed Tobą. Kosmo z baterią na rakiecie wkłada ją do środka.' },
+      task: 'Dostarcz baterię do rakiety.',
+      hint: 'W korytarzu nie da się wyminąć. Zielony bierze baterię i podaje ją niebieskiemu — niebieski stoi bliżej rakiety.',
+      fact: 'Programy też przekazują sobie dane — jak sztafeta pałeczkę. Jedna część programu oddaje wynik następnej.',
+      cards: ['step', 'left', 'right', 'take', 'give', 'swap'],
+      numbers: true,
+      dir: 'W',
+      dirs: { blue: 'E' },
+      stars: [8, 10],
+      map: [
+        '#~~~~~#',
+        'EK.N..R',
+        '#~~~~~#'
+      ],
+      solution: 'F T R R F2 G Zn F3'
+    },
+    {
+      title: 'Rzut przez śluz',
+      concept: { name: 'Rzut', text: 'Karta <b>Rzuć</b> rzuca baterię przed siebie. Leci nad śluzem i kraterami, aż złapie ją inna postać albo wpadnie do rakiety. Skała ją zatrzyma!' },
+      task: 'Przerzuć baterię przez śluz i dostarcz ją do rakiety.',
+      hint: 'Zielony podnosi baterię i rzuca ją do niebieskiego. Niebieski idzie z nią do rakiety.',
+      cards: ['step', 'left', 'right', 'take', 'throw', 'swap'],
+      numbers: true,
+      dir: 'E',
+      stars: [7, 9],
+      map: [
+        '~~~~~~R',
+        '~~~~~~.',
+        'KE~~~N.'
+      ],
+      solution: 'F T W Zn F L F2'
+    },
+    {
+      title: 'Sztafeta',
+      concept: { name: 'Zdarzenie', text: 'Karta <b>Gdy</b> nie wykonuje się po kolei — <b>czeka na zdarzenie</b>. <b>Gdy</b> + <b>🤲 Złapiesz</b>: kiedy ktoś złapie przedmiot, od razu wykonuje karty z jej środka, np. <b>Rzuć</b>. Tak działa każdy przycisk w grze!' },
+      task: 'Podajcie sobie baterię aż do rakiety, a potem wejdź na nią różowym Kosmo.',
+      hint: 'Połóż kartę <b>Gdy 🤲</b> z kartą <b>Rzuć</b> w środku. Wystarczy jeden rzut zielonego — reszta poleci sama!',
+      fact: 'Programy w telefonie ciągle nasłuchują zdarzeń: dotknięcia ekranu, nowej wiadomości, dzwonka.',
+      cards: ['step', 'take', 'throw', 'swap', 'on'],
+      events: ['catch'],
+      dir: 'E',
+      dirs: { blue: 'N', robo: 'W', pink: 'N' },
+      stars: [7, 9],
+      map: [
+        '#R#~~~#',
+        '~P~~~D~',
+        '~~~~~~~',
+        '~~~~~~~',
+        'KE~~~N~'
+      ],
+      solution: 'Ec( W ) F T W Zp F'
+    },
+    {
+      title: 'Deszcz meteorów',
+      concept: { name: 'Nasłuchiwanie', text: 'Meteoryty spadają za każdym razem gdzie indziej — nie da się ich zaplanować. Karta <b>Gdy</b> + <b>☄️ Meteoryt</b> nasłuchuje: gdy meteoryt spada, Kosmo od razu robi <b>Unikaj</b>.' },
+      task: 'Dojdź do rakiety przez deszcz meteorów.',
+      hint: 'Ułóż drogę do rakiety, a obok połóż kartę <b>Gdy ☄️</b> z kartą <b>Unikaj</b> w środku.',
+      fact: 'Gry nie wiedzą, kiedy naciśniesz przycisk — dlatego nasłuchują zdarzeń i reagują w tej samej chwili.',
+      cards: ['step', 'left', 'right', 'dodge', 'on'],
+      events: ['meteor'],
+      numbers: true,
+      meteors: 3,
+      dir: 'E',
+      stars: [7, 9],
+      map: [
+        'K.....#',
+        '#####.#',
+        'R.....#'
+      ],
+      solution: 'Em( U ) F5 R F2 R F5'
+    },
+    {
+      title: 'Wielki finał',
+      task: 'Przenieś baterię przez deszcz meteorów i rzuć ją różowemu. Różowy Kosmo leci rakietą!',
+      hint: 'Gdy ☄️ → Unikaj chroni wszystkich. Różowy po złapaniu baterii musi jeszcze dojść do rakiety — przełącz się na niego albo użyj karty Gdy 🤲.',
+      fact: 'Duże programy to wiele małych kawałków: polecenia, pętle, warunki, funkcje i zdarzenia. Znasz już je wszystkie!',
+      cards: ['step', 'left', 'right', 'take', 'throw', 'dodge', 'swap', 'on'],
+      events: ['meteor', 'catch'],
+      numbers: true,
+      meteors: 3,
+      dir: 'E',
+      dirs: { pink: 'S' },
+      stars: [8, 10],
+      map: [
+        'KE...~P',
+        '#~~~~#.',
+        '#~##~#.',
+        '#~~~~~R'
+      ],
+      solution: 'Em( U ) F T F3 W Zp F3'
+    }
+  ]
 };
 
 // Gra „Kod Robota”: dziecko wpisuje program w GDScript (język Godota), a robot wykonuje go na planszy.

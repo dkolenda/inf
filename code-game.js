@@ -1116,6 +1116,7 @@ function cgLinesWord(count) {
 }
 
 function cgUnlocked(game, save, levelIndex) {
+  if (debugFreeNav) return true;
   return levelIndex === 0 || Boolean(save.stars[levelIndex - 1]);
 }
 

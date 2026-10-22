@@ -71,7 +71,7 @@ function loadColoringPage(page) {
   if (COLORING_SVGS[page.id]) return Promise.resolve();
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = `assets/coloring/${page.id}.js`;
+    script.src = `assets/coloring/${page.id}.js${page.revision ? `?v=${page.revision}` : ''}`;
     script.onload = resolve;
     script.onerror = () => {
       script.remove();
@@ -455,9 +455,13 @@ function updateColoringStatus() {
   state.body.querySelector('[data-action="redo"]').disabled = !state.redoStack.length;
 }
 
-function readColoringSave(pageId) {
+function coloringSaveKey(page) {
+  return `kolorowanka:${page.id}${page.revision ? `:v${page.revision}` : ''}`;
+}
+
+function readColoringSave(page) {
   try {
-    const saved = JSON.parse(localStorage.getItem(`kolorowanka:${pageId}`));
+    const saved = JSON.parse(localStorage.getItem(coloringSaveKey(page)));
     if (Array.isArray(saved)) return { fills: saved, strokes: [] };
     return saved || { fills: [], strokes: [] };
   } catch {
@@ -467,7 +471,7 @@ function readColoringSave(pageId) {
 
 function restoreColoring() {
   const state = coloringGame;
-  const saved = readColoringSave(state.page.id);
+  const saved = readColoringSave(state.page);
   state.regions.forEach((region, regionIndex) => {
     if (saved.fills[regionIndex]) region.setAttribute('fill', saved.fills[regionIndex]);
   });
@@ -478,7 +482,7 @@ function restoreColoring() {
 function saveColoring() {
   const state = coloringGame;
   try {
-    localStorage.setItem(`kolorowanka:${state.page.id}`, JSON.stringify({
+    localStorage.setItem(coloringSaveKey(state.page), JSON.stringify({
       fills: state.regions.map((region) => {
         const color = regionColor(region);
         return color === COLORING_BLANK ? 0 : color;

@@ -22,6 +22,11 @@ const LINE_H = 1800;
 const MIN_SPECK = 40; // czarne kropki mniejsze od tego (px² przy 2400×1800) to szum
 const INK = 128;
 
+// Niektóre ilustracje mają bardzo wąskie przejścia między semantycznie osobnymi polami.
+// Wirtualnie pogrubiamy linie tylko podczas segmentacji; widoczny kontur nadal pochodzi
+// z niezmienionego PNG. Dzięki temu wiaderko nie łączy np. nieba z roślinnością.
+const REGION_EROSION = { stworki: 7 };
+
 function readGray(file, width, height) {
   return execFileSync('ffmpeg', [
     '-v', 'error', '-i', file,
@@ -57,6 +62,35 @@ function components(width, height, inside) {
     sizes.push(size);
   }
   return { label, sizes };
+}
+
+// Odległość Manhattan każdego piksela od czarnego konturu. Pole o marginesie N
+// zachowuje tylko piksele odległe od linii o więcej niż N pikseli.
+function distanceFromInk(gray, width, height) {
+  const distance = new Uint16Array(width * height);
+  distance.fill(65535);
+  const queue = new Int32Array(width * height);
+  let head = 0;
+  let tail = 0;
+  for (let p = 0; p < distance.length; p++) {
+    if (gray[p] < INK) {
+      distance[p] = 0;
+      queue[tail++] = p;
+    }
+  }
+  while (head < tail) {
+    const p = queue[head++];
+    const x = p % width;
+    const next = distance[p] + 1;
+    const neighbours = [x > 0 ? p - 1 : -1, x < width - 1 ? p + 1 : -1, p - width, p + width];
+    for (const q of neighbours) {
+      if (q >= 0 && q < distance.length && distance[q] > next) {
+        distance[q] = next;
+        queue[tail++] = q;
+      }
+    }
+  }
+  return distance;
 }
 
 // Kontury obszaru po krawędziach pikseli: wnętrze zawsze po prawej, dziury jako osobne pętle.
@@ -153,7 +187,11 @@ function pathData(loops, scale, tolerance) {
 
 function regionPaths(file) {
   const gray = readGray(file, REGION_W, REGION_H);
-  const { label, sizes } = components(REGION_W, REGION_H, (p) => gray[p] >= INK);
+  const name = file.slice(file.lastIndexOf('/') + 1, -4);
+  const erosion = REGION_EROSION[name] || 0;
+  const distance = erosion ? distanceFromInk(gray, REGION_W, REGION_H) : null;
+  const { label, sizes } = components(REGION_W, REGION_H, (p) =>
+    gray[p] >= INK && (!distance || distance[p] > erosion));
 
   // Białe obszary to pola, posortowane od największego — mniejsze leżą wyżej.
   const order = sizes.map((size, id) => [size, id]).filter(([size]) => size >= MIN_REGION).sort((a, b) => b[0] - a[0]);

@@ -1367,6 +1367,7 @@ function kpWriteSave(game, save) {
 }
 
 function kpUnlocked(save, levelIndex) {
+  if (debugFreeNav) return true;
   return levelIndex === 0 || Boolean(save.done[levelIndex - 1]);
 }
 

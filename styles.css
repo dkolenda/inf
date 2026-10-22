@@ -663,12 +663,18 @@ footer {
 .quiz-view { min-height: 100dvh; display: flex; flex-direction: column; }
 
 .quiz-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
   width: min(900px, calc(100% - 32px));
   margin: 0 auto;
   padding: 20px 0 12px;
   display: flex;
   align-items: center;
   gap: 18px;
+  background: #fbfcfd;
+  box-shadow: 0 0 0 100vmax #fbfcfd;
+  clip-path: inset(0 -100vmax);
 }
 
 .quiz-close {
@@ -1078,6 +1084,11 @@ footer {
 .is-correct .quiz-feedback { color: #3d8c03; }
 .is-partial .quiz-feedback { color: #b25f00; }
 
+.quiz-actions { display: flex; flex-shrink: 0; gap: 12px; }
+.quiz-back,
+.quiz-fix { gap: 8px; }
+.quiz-back[hidden],
+.quiz-fix[hidden] { display: none; }
 .quiz-check { min-width: 180px; background: var(--path-accent, var(--green)); border-bottom-color: var(--path-accent-dark, var(--green-dark)); }
 .is-partial .quiz-check { background: var(--orange); border-bottom-color: #d67d00; }
 .quiz-check:disabled { color: #a5b0b6; background: #e5eaed; border-bottom-color: #cfd6da; cursor: not-allowed; transform: none; filter: none; }
@@ -1248,7 +1259,10 @@ footer {
   .quiz-footer-inner { min-height: 0; flex-direction: column; align-items: stretch; gap: 10px; padding: 12px 0; }
   .quiz-feedback:empty { display: none; }
   .quiz-feedback strong { font-size: 17px; }
-  .quiz-check { width: 100%; }
+  .quiz-actions { gap: 8px; }
+  .quiz-back,
+  .quiz-fix { padding-inline: 14px; }
+  .quiz-check { flex: 1; min-width: 0; }
   .welcome-dialog { padding: 16px; }
   .welcome-card { padding: 34px 24px 29px; border-radius: 23px; }
 }
@@ -1659,12 +1673,20 @@ footer {
 /* Wzór strony dokumentu nad listą kroków (np. „Mój idol”). */
 .ct-link { margin: 0 0 22px; text-align: center; }
 .ct-link a { text-decoration: none; }
+.ct-link + .ct-link-note { margin: -12px 0 22px; text-align: center; color: var(--muted); }
 .ct-art { display: block; width: 100%; max-width: 420px; height: auto; margin: 0 auto 22px; }
+.ct-launch-actions { width: 100%; max-width: 420px; margin: -4px auto 22px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.ct-launch-button { min-width: 0; padding: 0 16px; gap: 8px; text-align: center; text-decoration: none; }
+.ct-launch-button-paint { background: #f59b23; border-bottom-color: #c66d00; }
+.ct-launch-button-photopea { background: #18a69a; border-bottom-color: #11776f; }
 .ct-apps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin: 0 0 22px; }
 .ct-app { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .ct-app-art { display: block; width: 100%; height: auto; margin: auto 0; border: 2px solid var(--line); border-radius: 12px; }
 .ct-app a { text-decoration: none; }
-@media (max-width: 560px) { .ct-apps { grid-template-columns: 1fr; } }
+@media (max-width: 560px) {
+  .ct-launch-actions,
+  .ct-apps { grid-template-columns: 1fr; }
+}
 .ct-layout { max-width: 380px; margin: 0 auto 22px; padding: 18px 20px; border: 2px solid var(--line); border-bottom-width: 5px; border-radius: 12px; background: white; box-shadow: var(--shadow); }
 .ct-layout small { color: var(--muted); font-size: 12px; font-weight: 800; }
 .ct-layout-title { margin-bottom: 14px; color: var(--path-accent-dark, var(--green-dark)); font-size: 15px; font-weight: 900; text-align: center; }
@@ -2321,7 +2343,7 @@ footer {
 .cg-page img { width: 100%; aspect-ratio: 4 / 3; object-fit: contain; border-radius: 12px; background: white; }
 
 .cg-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 236px; gap: 16px; align-items: start; }
-.cg-panel { position: sticky; top: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; border: 2px solid #f3e3c3; border-radius: 18px; background: #fff8ea; }
+.cg-panel { position: sticky; top: 86px; padding: 12px; display: flex; flex-direction: column; gap: 8px; border: 2px solid #f3e3c3; border-radius: 18px; background: #fff8ea; }
 .cg-panel-title { margin: 2px 0 0; display: flex; align-items: center; justify-content: center; gap: 8px; color: var(--path-accent-dark, var(--green-dark)); font-weight: 900; }
 .cg-current { width: 26px; height: 26px; border-radius: 50%; background: var(--swatch); box-shadow: 0 0 0 2px white, 0 0 0 3px #b9b2a2; }
 .cg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -2899,3 +2921,482 @@ body.pv-open { overflow: hidden; }
 }
 
 .pwa-update .primary-button { min-height: 44px; padding: 0 18px; }
+
+/* ——— Gra „Kosmo Kroki”: program z kart i plansza z kosmitą ——— */
+.quiz-main:has(.kk-game) { width: min(1160px, calc(100% - 32px)); }
+.kk-game .cg-status:empty { display: none; }
+.kk { --kk-palette-w: 172px; display: grid; grid-template-columns: var(--kk-palette-w) minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 20px; align-items: start; }
+.kk-side { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+/* Pasek celów poziomu nad grą. */
+.kk-goals { margin-bottom: 16px; padding: 10px 14px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; border: 2px solid var(--path-accent, var(--green)); border-radius: 14px; background: white; }
+.kk-goals-title { padding: 4px 10px; border-radius: 999px; background: var(--path-accent, var(--green)); color: white; font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; }
+.kk-goals-list { margin: 0; padding: 0; list-style: none; display: flex; gap: 8px 18px; flex-wrap: wrap; }
+.kk-goal { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.kk-goal-icon { width: 30px; height: 30px; flex: none; display: grid; place-items: center; font-size: 22px; line-height: 1; }
+.kk-goal-icon .kk-art { width: 100%; height: 100%; object-fit: contain; }
+.kk-goal-badge { padding: 2px 8px; border-radius: 999px; background: #eef0f3; color: var(--muted); font-size: 13px; font-weight: 900; white-space: nowrap; }
+.kk-goal-badge.is-bad { background: #fde8e8; color: #c62f2f; }
+.kk-goal.is-done .kk-goal-icon { border-radius: 50%; background: #58cc02; color: white; font-size: 17px; font-weight: 900; }
+.kk-goal.is-done .kk-goal-text { color: #3d8c03; }
+.kk-goal.is-done .kk-goal-badge { background: #e3f7d4; color: #3d8c03; }
+.kk-goal-short { display: none; }
+.kk-goal.is-done .kk-goal-short { color: #3d8c03; }
+.kk-goals-toggle { margin-left: auto; min-height: 28px; padding: 0 10px; border: 2px solid var(--line); border-radius: 10px; background: white; color: var(--muted); cursor: pointer; font: inherit; font-size: 12px; font-weight: 900; white-space: nowrap; }
+.kk-goals-toggle:hover { background: #f3f4f6; }
+.kk-goals.is-compact { padding: 6px 12px; }
+.kk-goals.is-compact .kk-goals-list { gap: 6px 14px; }
+.kk-goals.is-compact .kk-goal { gap: 5px; font-size: 14px; }
+.kk-goals.is-compact .kk-goal-icon { width: 24px; height: 24px; font-size: 18px; }
+.kk-goals.is-compact .kk-goal.is-done .kk-goal-icon { font-size: 14px; }
+.kk-goals.is-compact .kk-goal-text { display: none; }
+.kk-goals.is-compact .kk-goal-short { display: inline; }
+.kk-cover { display: block; width: min(100%, 260px); margin: 0 auto 24px; border-radius: 20px; }
+.kk-legend-icon { width: 38px; height: 38px; display: grid; place-items: center; font-size: 28px; line-height: 1; }
+.kk-legend-icon .kk-art { width: 100%; height: 100%; object-fit: contain; }
+
+.kk-board {
+  position: relative;
+  aspect-ratio: var(--cols) / var(--rows);
+  container-type: inline-size;
+  overflow: hidden;
+  border: 4px solid #5b3fa0;
+  border-radius: 18px;
+  background: var(--kk-ground) center / calc(100% / var(--cols)) calc(100% / var(--rows)), linear-gradient(160deg, #cdb8f2, #a98ddf);
+  box-shadow: var(--shadow);
+}
+.kk-cells { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(var(--cols), 1fr); grid-template-rows: repeat(var(--rows), 1fr); }
+.kk-cell { position: relative; display: grid; place-items: center; box-shadow: inset 0 0 0 0.5px rgba(70, 40, 130, 0.22); font-size: calc(100cqw / var(--cols) * 0.6); line-height: 1; }
+.kk-cell.is-slime { background: radial-gradient(ellipse 42% 34% at 50% 55%, #8be04e 0 92%, transparent 100%); }
+/* Krater: ciemna dziura. Skrzynia wepchnięta do środka zasypuje go — zostaje drewniana łata. */
+.kk-cell.is-crater { background: radial-gradient(ellipse 40% 34% at 50% 54%, #2a1d4a 0 62%, #6b54a8 76%, transparent 92%); }
+.kk-cell.is-crater.is-filled { background: radial-gradient(ellipse 40% 34% at 50% 54%, #c08f55 0 74%, #8a6236 84%, transparent 96%); }
+.kk-box { z-index: 1; transition: left 400ms ease, top 400ms ease; }
+.kk-box.is-filled { animation: kk-fill 380ms ease 320ms forwards; }
+.kk-cell .kk-art { width: 92%; height: 92%; object-fit: contain; }
+.kk-items { position: absolute; inset: 0; }
+.kk-item { position: absolute; width: calc(100% / var(--cols)); height: calc(100% / var(--rows)); display: grid; place-items: center; font-size: calc(100cqw / var(--cols) * 0.6); line-height: 1; }
+.kk-item .kk-art { width: 86%; height: 86%; object-fit: contain; }
+.kk-kosmo .kk-art { width: 76%; height: 76%; object-fit: contain; }
+.kk-crystal { filter: drop-shadow(0 2px 3px rgba(40, 140, 220, 0.45)); animation: kk-float 2.4s ease-in-out infinite; }
+.kk-crystal.is-taken { animation: cg-pick 450ms ease forwards; }
+.kk-kosmo.is-boarding .kk-kosmo-body { animation: kk-boarding 420ms ease-in forwards; }
+.kk-flyer { position: fixed; z-index: 50; pointer-events: none; display: grid; place-items: center; animation: kk-launch 1500ms ease-in 450ms forwards; }
+.kk-flyer > .kk-art { width: 100%; height: 100%; object-fit: contain; }
+/* Okienko rakiety (środek szyby na rakieta.png): przycięta twarz Kosmo. */
+.kk-window { position: absolute; left: 50%; top: 42.5%; width: 27%; height: 27%; translate: -50% -50%; border-radius: 50%; overflow: hidden; animation: kk-window-in 300ms ease-out backwards; }
+.kk-window .kk-art { position: absolute; left: 50%; top: 50%; width: 220%; height: 220%; max-width: none; translate: -50% -52%; object-fit: contain; }
+.kk-kosmo { z-index: 2; transition: left 400ms cubic-bezier(0.35, 0.1, 0.65, 0.9), top 400ms cubic-bezier(0.35, 0.1, 0.65, 0.9); }
+.kk-kosmo.is-jump .kk-kosmo-walk { animation: kk-hop 420ms ease-out; }
+/* Na planszy z Robo: postać, która słucha kart, ma złotą obwódkę. */
+.kk-kosmo.is-active::before { content: ''; position: absolute; inset: 6%; border: 3px dashed #ffc800; border-radius: 50%; pointer-events: none; }
+.kk-kosmo-body { position: relative; width: 100%; height: 100%; filter: drop-shadow(0 3px 2px rgba(40, 20, 80, 0.3)); }
+/* Kosmo stoi prosto i chodzi jak ludzik: kołysze się z nogi na nogę, a w lewo patrzy w lustrzanym odbiciu.
+   Kierunek pokazuje strzałka na ziemi pod stopami — nie obraca się cała postać jak rakieta. */
+.kk-kosmo-walk,
+.kk-kosmo-face { position: absolute; inset: 0; display: grid; place-items: center; transform-origin: 50% 88%; }
+.kk-kosmo-face { transition: transform 220ms ease; }
+.kk-kosmo.is-left .kk-kosmo-face { transform: scaleX(-1); }
+.kk-kosmo.is-walk .kk-kosmo-walk { animation: kk-walk 400ms ease-in-out; }
+.kk-kosmo.is-turn .kk-kosmo-walk { animation: kk-turn 320ms ease; }
+.kk-ground { position: absolute; left: 50%; top: 84%; width: 70%; aspect-ratio: 1; transform: translate(-50%, -50%) scaleY(0.42); pointer-events: none; }
+.kk-heading { position: absolute; inset: 0; border-radius: 50%; background: rgba(255, 200, 0, 0.2); box-shadow: inset 0 0 0 calc(100cqw / var(--cols) * 0.03) rgba(255, 200, 0, 0.8); transition: transform 300ms ease; }
+.kk-nose { position: absolute; top: -16%; left: 50%; border: calc(100cqw / var(--cols) * 0.1) solid transparent; border-bottom: calc(100cqw / var(--cols) * 0.14) solid #ffc800; border-top: 0; transform: translateX(-50%); transition: opacity 200ms ease; }
+/* Strzałka w górę schowałaby się za Kosmo — wtedy pokazujemy ją nad głową. */
+.kk-up { position: absolute; left: 50%; top: 0; z-index: 1; border: calc(100cqw / var(--cols) * 0.1) solid transparent; border-bottom: calc(100cqw / var(--cols) * 0.14) solid #ffc800; border-top: 0; transform: translate(-50%, -40%); filter: drop-shadow(0 1px 1px rgba(40, 20, 80, 0.45)); opacity: 0; transition: opacity 200ms ease; pointer-events: none; }
+.kk-kosmo.is-up .kk-up { opacity: 1; }
+.kk-kosmo.is-up .kk-nose { opacity: 0; }
+.kk-kosmo.is-bump .kk-art,
+.kk-kosmo.is-bump .kk-emoji { animation: kk-bump 500ms ease; }
+.kk-kosmo.is-wiggle.is-bump .kk-art,
+.kk-kosmo.is-wiggle.is-bump .kk-emoji { animation: kk-wiggle 500ms ease; }
+.kk-kosmo.is-happy .kk-kosmo-body { animation: cg-jump 550ms ease 2; }
+/* Kosmo na śluzie: grafika leżącego Kosmo, a gdy jej brak — zwykły Kosmo przewraca się na bok. */
+.kk-kosmo .kk-fallen { display: none; }
+.kk-kosmo.is-fallen .kk-fallen { display: block; scale: 1.35; animation: kk-fall-in 450ms ease-out; }
+.kk-kosmo.is-fallen .kk-kosmo-face:has(.kk-fallen) > .kk-art:not(.kk-fallen) { display: none; }
+.kk-kosmo.is-fallen .kk-kosmo-face:not(:has(.kk-fallen)) > .kk-art { transform-origin: 50% 90%; animation: kk-fall 450ms ease-in forwards; }
+
+/* Karty jak w Scottie Go!: kolor mówi, co karta robi. */
+.kk-card {
+  --kk-card: #58cc02;
+  --kk-card-dark: #3f9a00;
+  position: relative;
+  display: inline-flex;
+  flex: none;
+}
+.kk-c-left,
+.kk-c-right { --kk-card: #1cb0f6; --kk-card-dark: #0a86c2; }
+.kk-c-take { --kk-card: #ff9600; --kk-card-dark: #cc6f00; }
+.kk-c-repeat { --kk-card: #9069cd; --kk-card-dark: #6a46a8; }
+.kk-c-call { --kk-card: #ffc800; --kk-card-dark: #d19f00; }
+.kk-c-push { --kk-card: #c4823b; --kk-card-dark: #93602a; }
+.kk-c-swap { --kk-card: #d946ef; --kk-card-dark: #a21caf; }
+.kk-c-if { --kk-card: #4c6ef5; --kk-card-dark: #364fc7; }
+.kk-c-if .kk-card-label,
+.kk-c-swap .kk-card-label { font-size: 10px !important; }
+.kk-c-start { --kk-card: #00b8a9; --kk-card-dark: #008a7f; }
+.kk-card-face,
+.kk-pick {
+  width: 70px;
+  height: 72px;
+  padding: 6px 2px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border: 0;
+  border-bottom: 5px solid var(--kk-card-dark);
+  border-radius: 12px;
+  background: var(--kk-card);
+  color: white;
+  cursor: pointer;
+  font: inherit;
+  transition: transform 120ms ease, filter 120ms ease;
+}
+.kk-card-face:hover,
+.kk-pick:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(1.08); }
+.kk-pick:active:not(:disabled) { transform: translateY(2px); }
+.kk-pick:disabled { cursor: not-allowed; opacity: 0.4; }
+.kk-card-icon { font-size: 28px; font-weight: 900; line-height: 1; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.15); }
+.kk-card-label { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0; white-space: nowrap; }
+/* Cyfry siedzą w gnieździe po prawej stronie karty Idź / Powtórz i czytają się razem: 1 2 to 12. */
+.kk-c-number { --kk-card: #ff4b8b; --kk-card-dark: #c92a64; }
+.kk-digits { align-self: center; display: flex; align-items: center; gap: 2px; margin-left: 3px; }
+.kk-digits > .kk-drop { align-self: center; width: 4px; height: 36px; min-height: 0; margin: 0 -1px; }
+.kk-digit {
+  --kk-card: #ff4b8b;
+  --kk-card-dark: #c92a64;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  border-bottom: 4px solid var(--kk-card-dark);
+  border-radius: 10px;
+  background: var(--kk-card);
+  color: white;
+  cursor: pointer;
+  font: 900 18px/1 'Nunito', system-ui, sans-serif;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.15);
+  touch-action: none;
+  transition: transform 120ms ease, filter 120ms ease;
+}
+.kk-digit[data-i] { cursor: grab; }
+.kk-digit[data-i]:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.kk-digit.is-ghost { opacity: 0.4; cursor: default; }
+.kk-digit.is-empty { border: 2px dashed rgba(255, 255, 255, 0.55); background: transparent; color: rgba(255, 255, 255, 0.6); text-shadow: none; cursor: default; }
+.kk-digit.is-dragging { opacity: 0.35; }
+/* Przedmiot w gnieździe karty Jeśli — to on mówi, co sprawdzić. */
+.kk-c-cond,
+.kk-digit.kk-cond { --kk-card: #15aabf; --kk-card-dark: #0b7285; }
+.kk-digit.kk-cond { width: 40px; font-size: 22px; }
+.kk-digit.kk-cond[data-cond] { cursor: grab; }
+.kk-digit.kk-cond[data-cond]:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.kk-card.is-number-target > .kk-digits { border-radius: 12px; outline: 3px solid #ffc800; outline-offset: 2px; }
+.kk-card.is-number-target .kk-digit:not([data-i]):not(.kk-cond) { display: none; }
+/* Belka: cyfry 0–9 w siatce. */
+.kk-digit-picks { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.kk-palette .kk-digit-picks .kk-pick { height: 38px; padding: 0; justify-content: center; border-bottom-width: 3px; border-radius: 9px; }
+.kk-digit-picks .kk-card-icon { font-size: 18px; }
+.kk.is-compact .kk-digit-picks { grid-template-columns: repeat(2, 1fr); }
+.kk-remove {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  display: none;
+  border: 2px solid white;
+  border-radius: 50%;
+  background: #ff4b4b;
+  color: white;
+  cursor: pointer;
+  font: 900 14px/1 'Nunito', system-ui, sans-serif;
+}
+.kk-card:hover > .kk-remove,
+.kk-card:focus-within > .kk-remove { display: block; }
+@media (hover: none) { .kk-remove { display: block; } }
+.kk-card.is-running .kk-card-face { transform: translateY(-3px); }
+.kk-card.is-running::after { transform: translateY(-3px); }
+/* Obrys idzie za kształtem klocka (outline obcięłaby maska wcięcia). */
+.kk-card.is-running { z-index: 3; filter: drop-shadow(0 0 2px #ffc800) drop-shadow(0 0 2px #ffc800) drop-shadow(0 0 1px #ffc800); }
+.kk-card.is-running.is-no { filter: drop-shadow(0 0 2px #9aa1ab) drop-shadow(0 0 2px #9aa1ab); }
+.kk-card.is-running.is-no > .kk-card-face { filter: grayscale(0.7); }
+.kk-pick,
+.kk-card-face { touch-action: none; }
+
+/* Belka z kartami po lewej: karty pionowo, w zwijanych kategoriach. */
+.kk-palette { position: sticky; top: 12px; max-height: var(--kk-palette-h, calc(100vh - 24px)); overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 2px solid var(--line); border-radius: 16px; background: white; }
+.kk-palette > * { flex: none; }
+
+/* Własny, cienki scrollbar w belce z kartami i w oknie programu. */
+.kk-palette,
+.kk-program { --kk-thumb: #d3d7de; --kk-thumb-hover: #b4bac4; }
+.kk-scroll { --kk-thumb: rgba(205, 207, 210, 0.35); --kk-thumb-hover: rgba(205, 207, 210, 0.6); }
+.kk-palette::-webkit-scrollbar,
+.kk-program::-webkit-scrollbar,
+.kk-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.kk-palette::-webkit-scrollbar-track,
+.kk-program::-webkit-scrollbar-track,
+.kk-scroll::-webkit-scrollbar-track,
+.kk-scroll::-webkit-scrollbar-corner { background: transparent; }
+.kk-palette::-webkit-scrollbar-thumb,
+.kk-program::-webkit-scrollbar-thumb,
+.kk-scroll::-webkit-scrollbar-thumb { border: 3px solid transparent; border-radius: 999px; background: var(--kk-thumb) padding-box; }
+.kk-palette::-webkit-scrollbar-thumb:hover,
+.kk-program::-webkit-scrollbar-thumb:hover,
+.kk-scroll::-webkit-scrollbar-thumb:hover { background-color: var(--kk-thumb-hover); }
+@supports not selector(::-webkit-scrollbar) {
+  .kk-palette,
+  .kk-program,
+  .kk-scroll { scrollbar-width: thin; scrollbar-color: var(--kk-thumb) transparent; }
+}
+.kk-group > summary { padding: 4px 6px; border-radius: 8px; color: var(--muted); cursor: pointer; font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; }
+.kk-group > summary:hover { background: #f3f4f6; }
+.kk-group.is-suggested { padding-bottom: 6px; border-bottom: 2px dashed var(--line); }
+.kk-group.is-suggested > summary { color: var(--path-accent, var(--green)); }
+.kk-group-cards { display: flex; flex-direction: column; gap: 6px; padding: 6px 0 4px; }
+.kk-palette .kk-pick { width: 100%; height: 46px; padding: 0 12px; flex-direction: row; justify-content: flex-start; gap: 10px; border-bottom-width: 4px; }
+.kk-palette .kk-card-icon { width: 26px; font-size: 22px; text-align: center; }
+.kk-palette .kk-card-label { font-size: 12px; }
+.kk-palette-toggle { align-self: flex-end; min-height: 28px; padding: 0 10px; border: 2px solid var(--line); border-radius: 10px; background: white; color: var(--muted); cursor: pointer; font: inherit; font-size: 12px; font-weight: 900; }
+.kk-palette-toggle:hover { background: #f3f4f6; }
+.kk.is-compact { --kk-palette-w: 76px; }
+.kk.is-compact .kk-palette { padding: 8px 6px; }
+.kk.is-compact .kk-palette-toggle { align-self: stretch; padding: 0; font-size: 16px; }
+.kk.is-compact .kk-group > summary { overflow: hidden; padding: 4px 2px; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
+.kk.is-compact .kk-palette .kk-pick { justify-content: center; padding: 0; }
+.kk.is-compact .kk-palette .kk-card-label { display: none; }
+/* Program i funkcje stoją jeden pod drugim. Gdy się nie mieszczą, całość przewija się w dół. */
+.kk-program { display: flex; flex-direction: column; gap: 10px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; }
+.kk-strip { flex: 1 0 220px; min-height: 0; display: flex; flex-direction: column; padding: 10px 12px 14px; border: 3px solid #2c3440; border-radius: 16px; background: #1d2229; cursor: pointer; }
+.kk-strip > .kk-scroll { flex: 1; min-height: 120px; }
+.kk-strip.is-hidden { display: none; }
+/* Zakładki u góry: Program i każda funkcja jak osobny plik. Widać jedną naraz. */
+.kk-tabs { flex: none; display: flex; gap: 4px; margin-bottom: -13px; overflow-x: auto; scrollbar-width: none; }
+.kk-tabs::-webkit-scrollbar { display: none; }
+.kk-tab { position: relative; flex: none; max-width: 160px; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px 12px; border: 3px solid #2c3440; border-bottom: 0; border-radius: 12px 12px 0 0; background: #3a424e; color: #9aa0a8; cursor: pointer; font: inherit; font-size: 13px; font-weight: 900; }
+.kk-tab:hover { color: #e3e5e8; }
+.kk-tab-icon { font-size: 16px; line-height: 1; }
+.kk-tab-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kk-tab.is-func { border-color: #8a6a00; background: #4a4020; color: #c9a94a; }
+.kk-tab.is-func:hover { color: #ffd84d; }
+.kk-tab.is-active { z-index: 1; background: #1d2229; color: #e3e5e8; }
+.kk-tab.is-func.is-active { border-color: #d19f00; background: #2b2615; color: #ffd84d; }
+.kk-program:has(.kk-tabs) > .kk-strip { border-top-left-radius: 0; }
+.kk-strip.is-func { border-color: #d19f00; background: #2b2615; }
+.kk-strip-title { margin: 0 0 10px; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; color: #cdcfd2; font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.04em; }
+.kk-strip-count { color: rgba(205, 207, 210, 0.6); font-weight: 800; text-transform: none; letter-spacing: 0; }
+.kk-strip.is-func > .kk-strip-title { flex-wrap: nowrap; align-items: center; }
+.kk-func-title { flex: 1; min-width: 0; display: inline-flex; align-items: center; gap: 6px; }
+.kk-func-name { flex: 1; min-width: 0; width: 100%; padding: 3px 8px; border: 2px dashed rgba(209, 159, 0, 0.7); border-radius: 8px; background: rgba(0, 0, 0, 0.25); color: #ffd84d; font: inherit; letter-spacing: inherit; text-transform: inherit; cursor: text; }
+.kk-func-name::placeholder { color: rgba(255, 216, 77, 0.55); }
+.kk-func-name:focus { outline: none; border-style: solid; border-color: #ffc800; background: rgba(0, 0, 0, 0.4); }
+.kk-func-delete { flex: none; width: 26px; height: 26px; padding: 0; border: 2px solid rgba(209, 159, 0, 0.7); border-radius: 50%; background: transparent; color: #ffd84d; cursor: pointer; font: 900 15px/1 'Nunito', system-ui, sans-serif; }
+.kk-func-delete:hover { border-color: #ff4b4b; background: #ff4b4b; color: white; }
+/* Belka: karty funkcji i karta „Nowa”, która zakłada kolejną funkcję. */
+.kk-func-picks { display: contents; }
+.kk-pick.kk-new-func { border: 2px dashed var(--kk-card-dark); background: #fff8dc; color: #9a7400; }
+.kk-list { min-height: 78px; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; padding: 4px; border-radius: 12px; }
+.kk-list.is-active { box-shadow: inset 0 0 0 2px rgba(255, 200, 0, 0.45); }
+.kk-loop { display: inline-flex; align-items: flex-start; gap: 8px; padding: 6px 8px 6px 6px; border: 3px solid #9069cd; border-radius: 14px; background: rgba(144, 105, 205, 0.18); }
+.kk-loop > .kk-list { min-width: 76px; min-height: 72px; padding: 0 4px; border: 2px dashed rgba(190, 160, 240, 0.55); }
+.kk-loop > .kk-list.is-active { border-color: #ffc800; box-shadow: none; }
+.kk-loop.is-if { border-color: #4c6ef5; background: rgba(76, 110, 245, 0.16); }
+.kk-loop.is-if::after { background: #4c6ef5 !important; }
+.kk-loop.is-if > .kk-list { border-color: rgba(140, 165, 255, 0.55); }
+.kk-loop.is-if > .kk-list.is-active { border-color: #ffc800; }
+.kk-empty { align-self: center; padding: 0 6px; color: rgba(205, 207, 210, 0.55); font-size: 13px; font-weight: 800; }
+.kk-caret { align-self: stretch; width: 4px; min-height: 64px; margin: 0 -8px; border-radius: 4px; background: #ffc800; animation: kk-caret 1s steps(2, start) infinite; }
+
+/* Okno programu i każdej funkcji przewija się w obie strony. Karty idą z góry na dół. */
+.kk-scroll { overflow: auto; border-radius: 12px; overscroll-behavior: contain; }
+.kk-code { position: sticky; top: 12px; height: var(--kk-code-h, calc(100vh - 24px)); }
+.kk-program { flex: 1; min-height: 0; }
+.kk-code > .cg-hint { flex: none; }
+.kk-scroll > .kk-list { width: max-content; min-width: 100%; }
+.kk-scroll > .kk-list.is-col { min-height: 100%; }
+.kk-list.is-col { flex-direction: column; flex-wrap: nowrap; gap: 8px; }
+.kk-list.is-col > .kk-card > .kk-card-face,
+.kk-list.is-col > .kk-loop > .kk-card > .kk-card-face { width: 150px; height: 46px; padding: 0 12px; flex-direction: row; justify-content: flex-start; gap: 10px; border-bottom-width: 4px; }
+.kk-list.is-col > .kk-card .kk-card-icon,
+.kk-list.is-col > .kk-loop > .kk-card .kk-card-icon { width: 26px; font-size: 22px; text-align: center; }
+.kk-list.is-col > .kk-card .kk-card-label,
+.kk-list.is-col > .kk-loop > .kk-card .kk-card-label { font-size: 12px; }
+.kk-list.is-col > .kk-loop { flex-direction: column; gap: 8px; padding: 6px 10px 8px 6px; }
+.kk-loop > .kk-list.is-col { min-width: 150px; min-height: 54px; margin-left: 20px; padding: 6px; }
+.kk-list.is-col > .kk-caret { align-self: flex-start; width: 150px; height: 4px; min-height: 0; margin: -6px 0; }
+.kk-list.is-col > .kk-empty { align-self: flex-start; padding: 6px; }
+
+/* Klocki zazębiają się jak w Scottie Go!: wypustka karty wchodzi w wcięcie następnej (góra–dół). */
+.kk-list.is-col { gap: 0; }
+.kk-list.is-col > .kk-caret,
+.kk-list.is-col > .kk-drop { margin: -2px 0; }
+.kk-card:not(.kk-pick),
+.kk-loop { --kk-knob: 8px; --kk-knob-row: 36px; --kk-knob-col: 30px; position: relative; }
+.kk-card:not(.kk-pick) > .kk-card-face {
+  -webkit-mask: radial-gradient(circle at 0 var(--kk-knob-row), transparent var(--kk-knob), #000 calc(var(--kk-knob) + 0.5px));
+  mask: radial-gradient(circle at 0 var(--kk-knob-row), transparent var(--kk-knob), #000 calc(var(--kk-knob) + 0.5px));
+}
+.kk-card:not(.kk-pick)::after,
+.kk-loop::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  top: calc(var(--kk-knob-row) - var(--kk-knob));
+  left: 100%;
+  width: var(--kk-knob);
+  height: calc(var(--kk-knob) * 2);
+  border-radius: 0 var(--kk-knob) var(--kk-knob) 0;
+  background: var(--kk-card);
+  pointer-events: none;
+  transition: transform 120ms ease;
+}
+.kk-loop::after { background: #9069cd; }
+.kk-list.is-col > .kk-card > .kk-card-face {
+  -webkit-mask: radial-gradient(circle at var(--kk-knob-col) 0, transparent var(--kk-knob), #000 calc(var(--kk-knob) + 0.5px));
+  mask: radial-gradient(circle at var(--kk-knob-col) 0, transparent var(--kk-knob), #000 calc(var(--kk-knob) + 0.5px));
+}
+.kk-list.is-col > .kk-card::after,
+.kk-list.is-col > .kk-loop::after {
+  top: 100%;
+  left: calc(var(--kk-knob-col) - var(--kk-knob));
+  width: calc(var(--kk-knob) * 2);
+  height: var(--kk-knob);
+  border-radius: 0 0 var(--kk-knob) var(--kk-knob);
+}
+.kk-list.is-col > .kk-card::after { background: var(--kk-card-dark); }
+/* Karta Powtórz w pętli jest jej głową: łączy się cała pętla, nie sama karta. */
+.kk-loop > .kk-card > .kk-card-face { -webkit-mask: none; mask: none; }
+.kk-loop > .kk-card::after { content: none; }
+/* Start i głowa funkcji są pierwsze — nie mają wcięcia u góry. */
+.kk-list.is-col > .kk-start > .kk-card-face { -webkit-mask: none; mask: none; }
+.kk-card:not(.kk-pick):has(> .kk-card-face:hover)::after { transform: translateY(-2px); }
+.kk-card:not(.kk-pick) > .kk-digits,
+.kk-card:not(.kk-pick) > .kk-remove { z-index: 2; }
+
+/* Przeciąganie: karta jedzie za wskaźnikiem, a pasek pokazuje, gdzie spadnie. */
+.kk-drop { flex: none; align-self: stretch; width: 4px; min-height: 64px; margin: 0 -8px; border-radius: 4px; background: white; box-shadow: 0 0 0 2px #58cc02, 0 0 10px #58cc02; }
+.kk-list.is-col > .kk-drop { align-self: flex-start; width: 150px; height: 4px; min-height: 0; margin: -6px 0; }
+.kk-ghost.kk-ghost { position: fixed; z-index: 1000; margin: 0; pointer-events: none; transform: translate(-50%, -50%) scale(0.6) rotate(-4deg); filter: drop-shadow(0 8px 10px rgba(0, 0, 0, 0.3)); }
+.kk-ghost .kk-remove { display: none !important; }
+.kk-preview { opacity: 0.4; pointer-events: none; }
+.kk-preview .kk-remove { display: none !important; }
+.kk-list:has(> .kk-preview) > .kk-empty,
+.kk-loop.is-moved,
+.kk-card.is-moved { display: none; }
+.kk-card.is-dragging,
+.kk-loop.is-dragging { opacity: 0.35; }
+.kk-game.is-dragging,
+.kk-game.is-dragging * { cursor: grabbing; user-select: none; }
+.kk-game.is-dragging .kk-caret { display: none; }
+.kk-game.is-running .kk-palette,
+.kk-game.is-running .kk-list { pointer-events: none; }
+.kk-game.is-running .kk-palette { opacity: 0.5; }
+.kk-game.is-running .kk-caret,
+.kk-game.is-running .kk-remove { display: none; }
+
+@keyframes kk-float { 50% { transform: translateY(-6%); } }
+@keyframes kk-bump { 35% { transform: translate(var(--bump-x, 0), var(--bump-y, 0)); } 55% { transform: translate(calc(var(--bump-x, 0) * -0.3), calc(var(--bump-y, 0) * -0.3)); } }
+@keyframes kk-walk {
+  0%, 100% { transform: none; }
+  22% { transform: translateY(-9%) rotate(-7deg); }
+  46% { transform: scale(1.06, 0.94); }
+  72% { transform: translateY(-9%) rotate(7deg); }
+  94% { transform: scale(1.04, 0.96); }
+}
+@keyframes kk-turn { 40% { transform: translateY(-6%) scaleX(0.82); } 75% { transform: scale(1.04, 0.96); } }
+@keyframes kk-fall { 30% { transform: rotate(-18deg) translateY(-6%); } to { transform: rotate(90deg) translateY(-12%); } }
+@keyframes kk-fall-in { from { transform: rotate(-50deg) translateY(-10%); } 65% { transform: rotate(6deg); } }
+@keyframes kk-wiggle { 25% { transform: rotate(-12deg); } 75% { transform: rotate(12deg); } }
+@keyframes kk-launch { 0%, 20% { transform: translate(0, 0); } 6% { transform: translate(-2px, 1px); } 12% { transform: translate(2px, -1px); } 25% { transform: translateY(4%); } to { transform: translateY(var(--fly-y)); } }
+@keyframes kk-boarding { to { transform: scale(0.2); opacity: 0; } }
+@keyframes kk-window-in { from { scale: 0; } }
+@keyframes kk-hop { 45% { transform: translateY(-38%) scale(1.12); } }
+@keyframes kk-fill { to { transform: scale(0.5); opacity: 0; } }
+@keyframes kk-caret { to { visibility: hidden; } }
+
+@media (max-width: 1000px) {
+  .kk-code { position: static; }
+  .kk { --kk-palette-w: 160px; grid-template-columns: var(--kk-palette-w) minmax(0, 1fr); }
+  .kk-palette { grid-row: span 2; }
+}
+
+@media (max-width: 600px) {
+  .kk { grid-template-columns: minmax(0, 1fr); }
+  .kk-palette { position: static; grid-row: auto; max-height: none; overflow: visible; }
+  .kk-group-cards { flex-direction: row; flex-wrap: wrap; }
+  .kk-palette .kk-pick { width: auto; }
+  .kk.is-compact .kk-palette .kk-pick { width: 52px; }
+  .kk.is-compact .kk-palette-toggle { align-self: flex-end; padding: 0 12px; }
+}
+
+@media (max-width: 520px) {
+  .kk-card-face,
+  .kk-pick { width: 60px; height: 64px; }
+  .kk-card-icon { font-size: 24px; }
+  .kk-card-label { font-size: 8px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kk-kosmo,
+  .kk-kosmo-face,
+  .kk-heading { transition: none; }
+  .kk-kosmo-walk,
+  .kk-crystal,
+  .kk-caret { animation: none; }
+  .kk-fly { transition: none; }
+}
+.kk-emoji { display: grid; place-items: center; }
+
+/* Kosmo w kolorach: ta sama grafika z przesuniętą barwą — na planszy, w okienku rakiety i na bloczkach postaci. */
+.kk-is-blue .kk-kosmo-face > .kk-art,
+.kk-is-blue.kk-window .kk-art,
+.kk-tint.kk-is-blue > .kk-art { filter: hue-rotate(115deg) saturate(1.15); }
+.kk-is-pink .kk-kosmo-face > .kk-art,
+.kk-is-pink.kk-window .kk-art,
+.kk-tint.kk-is-pink > .kk-art { filter: hue-rotate(215deg) saturate(1.3); }
+.kk-tint { display: inline-grid; place-items: center; width: 1.15em; height: 1.15em; }
+.kk-tint > .kk-art { width: 100%; height: 100%; object-fit: contain; }
+
+/* Nowe karty: Podaj, Rzuć, Unikaj, Gdy — i bloczki do gniazd Przełącz (postać) i Gdy (zdarzenie). */
+.kk-c-give { --kk-card: #f76707; --kk-card-dark: #c2510a; }
+.kk-c-throw { --kk-card: #fa5252; --kk-card-dark: #c92a2a; }
+.kk-c-dodge { --kk-card: #82c91e; --kk-card-dark: #5c940d; }
+.kk-c-on { --kk-card: #0ca678; --kk-card-dark: #087f5b; }
+.kk-c-who,
+.kk-digit.kk-slot-who { --kk-card: #be4bdb; --kk-card-dark: #862e9c; }
+.kk-c-event,
+.kk-digit.kk-slot-event { --kk-card: #12b886; --kk-card-dark: #087f5b; }
+.kk-loop.is-on { border-color: #0ca678; background: rgba(12, 166, 120, 0.16); }
+.kk-loop.is-on::after { background: #0ca678 !important; }
+.kk-loop.is-on > .kk-list { border-color: rgba(99, 230, 190, 0.55); }
+.kk-loop.is-on > .kk-list.is-active { border-color: #ffc800; }
+
+/* Bateria: leży na planszy, a podniesiona siedzi przy ramieniu postaci. */
+.kk-battery { filter: drop-shadow(0 2px 3px rgba(60, 160, 40, 0.45)); }
+.kk-battery.is-taken { animation: cg-pick 450ms ease forwards; }
+.kk-hold { position: absolute; right: 2%; top: 30%; z-index: 1; width: 38%; height: 38%; display: none; place-items: center; font-size: 0.45em; pointer-events: none; }
+.kk-hold > .kk-art { width: 100%; height: 100%; }
+.kk-kosmo.is-holding .kk-hold { display: grid; animation: kk-window-in 240ms ease-out; }
+.kk-fly { z-index: 4; font-size: calc(100cqw / var(--cols) * 0.4); transition: left 380ms linear, top 380ms linear; pointer-events: none; }
+.kk-fly > .kk-art { width: 50%; height: 50%; animation: kk-spin 380ms linear; }
+.kk-fly.is-lost { opacity: 0; transition: left 380ms linear, top 380ms linear, opacity 200ms ease 300ms; }
+.kk-rocket.is-loaded > .kk-art { animation: kk-loaded 500ms ease; }
+
+/* Liczba na krysztale przy sortowaniu. */
+.kk-num { position: absolute; right: 4%; bottom: 4%; min-width: 1.7em; padding: 0 0.3em; border-radius: 999px; background: white; color: #3b2a74; font: 900 calc(100cqw / var(--cols) * 0.22) / 1.45 'Nunito', system-ui, sans-serif; text-align: center; box-shadow: 0 1px 3px rgba(40, 20, 80, 0.35); }
+
+/* Meteoryt spada z ukosa; po uniku rozbija się i znika. Unik to szybki odskok w bok i powrót. */
+.kk-meteor { z-index: 5; pointer-events: none; }
+.kk-meteor > .kk-art { animation: kk-meteor 380ms ease-in both; }
+.kk-meteor.is-crash { animation: kk-crash 420ms ease-out forwards; }
+.kk-kosmo.is-dodge .kk-kosmo-walk { animation: kk-dodge 400ms ease; }
+@keyframes kk-meteor { from { transform: translate(120%, -220%) scale(0.6); opacity: 0.4; } }
+@keyframes kk-crash { 30% { transform: scale(1.4); } to { transform: scale(0.4); opacity: 0; } }
+@keyframes kk-dodge { 40% { transform: translateX(-38%) rotate(-14deg); } }
+@keyframes kk-spin { to { transform: rotate(360deg); } }
+@keyframes kk-loaded { 40% { transform: scale(1.15); filter: drop-shadow(0 0 8px #ffe066); } }
