@@ -482,7 +482,10 @@ const coloringTask = {
     { id: 'aniimo', label: 'Przygoda z Aniimo', src: 'assets/coloring/aniimo.svg' },
     { id: 'kot-potter', label: 'Kot Harry Potter', src: 'assets/coloring/kot-potter.svg' },
     { id: 'bubble-tea', label: 'Bubble tea', src: 'assets/coloring/bubble-tea.svg' },
-    { id: 'dumplings', label: 'Dumplings – gniotek antystresowy', src: 'assets/coloring/dumplings.svg' }
+    { id: 'dumplings', label: 'Dumplings – gniotek antystresowy', src: 'assets/coloring/dumplings.svg' },
+    { id: 'koty-wladca', label: 'Koty z Władcy Pierścieni', src: 'assets/coloring/koty-wladca.svg' },
+    { id: 'pandy', label: 'Pandy w bambusach', src: 'assets/coloring/pandy.svg' },
+    { id: 'lilo-stitch', label: 'Lilo i Stitch', src: 'assets/coloring/lilo-stitch.svg' }
   ]
 };
 
