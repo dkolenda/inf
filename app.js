@@ -109,7 +109,7 @@ const topics = [
     accent: '#00b8a9',
     dark: '#00978a',
     soft: '#dff8f5',
-    quizzes: { 0: scottieGoTask, 1: frozenTask, 2: hourOfCodeTask, 3: programmingQuiz, 4: codeRobotGame, 5: boardCodeGame, 6: algorithmRobotGame, 8: kosmoKrokiGame },
+    quizzes: { 0: scottieGoTask, 1: frozenTask, 2: hourOfCodeTask, 3: programmingQuiz, 4: codeRobotGame, 5: boardCodeGame, 6: algorithmRobotGame, 8: kosmoKrokiGame, 9: editorGameTask },
     lessons: [
       'Scottie Go! — pierwszy poziom',
       'Kraina Lodu — zagadki z Elzą',
@@ -120,7 +120,7 @@ const topics = [
       'Gra: Algorytmy Robota',
       'Godot — postać chodzi strzałkami',
       'Gra: Kosmo Kroki',
-      'Szukamy błędów'
+      'Stwórz grę w edytorze'
     ]
   }
 ];

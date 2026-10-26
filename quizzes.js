@@ -482,7 +482,10 @@ const coloringTask = {
     { id: 'aniimo', label: 'Przygoda z Aniimo', src: 'assets/coloring/aniimo.svg' },
     { id: 'kot-potter', label: 'Kot Harry Potter', src: 'assets/coloring/kot-potter.svg' },
     { id: 'bubble-tea', label: 'Bubble tea', src: 'assets/coloring/bubble-tea.svg' },
-    { id: 'dumplings', label: 'Dumplings – gniotek antystresowy', src: 'assets/coloring/dumplings.svg' }
+    { id: 'dumplings', label: 'Dumplings – gniotek antystresowy', src: 'assets/coloring/dumplings.svg' },
+    { id: 'koty-wladca', label: 'Koty z Władcy Pierścieni', src: 'assets/coloring/koty-wladca.svg' },
+    { id: 'pandy', label: 'Pandy w bambusach', src: 'assets/coloring/pandy.svg' },
+    { id: 'lilo-stitch', label: 'Lilo i Stitch', src: 'assets/coloring/lilo-stitch.svg' }
   ]
 };
 
@@ -1796,6 +1799,21 @@ const godotTask = {
   doneHint: 'Twoja ikonka Godota chodzi po ekranie strzałkami.',
   reward: 40,
   layout: '<img class="ct-art" src="assets/task-art/godot-strzalki.png" width="400" height="400" alt="Niebieski robot Godota idzie po ekranie gry, obok klawisze strzałek" />',
+  steps: []
+};
+
+// Zadanie „Programowanie”: własna gra w edytorze. Zalicza kod nauczyciela.
+// Miejsce na zdjęcie edytora — podmień .ct-art-placeholder na <img class="ct-art">.
+// Edytor to osobny program JSGame Engine (folder jsgame-engine).
+const editorGameTask = {
+  type: 'task',
+  id: 'programowanie/zadanie-gra-w-edytorze',
+  title: 'Programowanie',
+  prompt: 'Stwórz grę w edytorze',
+  hint: 'Otwórz program <b>JSGame Engine</b> i <b>stwórz własną grę</b>.',
+  doneHint: 'Stworzyłeś własną grę w edytorze.',
+  reward: 40,
+  layout: `<div class="ct-art ct-art-placeholder" role="img" aria-label="Miejsce na zdjęcie edytora">Zdjęcie edytora</div>`,
   steps: []
 };
 

@@ -1,0 +1,52 @@
+{
+  "name": "jsgame-engine",
+  "productName": "JSGame Engine",
+  "version": "1.0.0",
+  "description": "Edytor gier 2D w stylu Unreal Engine: Blueprinty zamieniają się w TypeScript, a gra eksportuje się jako strona WWW.",
+  "author": "Damian Kolenda",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win",
+    "dist:portable": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "45.0.0",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "pl.informatyczna-przygoda.jsgame-engine",
+    "productName": "JSGame Engine",
+    "files": [
+      "main.js",
+      "preload.js",
+      "ts-host.js",
+      "project-host.js",
+      "tools/**/*",
+      "src/**/*",
+      "build/icon.png"
+    ],
+    "asarUnpack": [
+      "tools/**",
+      "node_modules/typescript/**"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "shortcutName": "JSGame Engine"
+    }
+  },
+  "dependencies": {
+    "typescript": "5.9.3"
+  }
+}

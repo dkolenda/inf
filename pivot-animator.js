@@ -119,6 +119,7 @@ function openPivotAnimator() {
         <button type="button" data-pv="open">📂 Otwórz</button>
         <button type="button" data-pv="save">💾 Zapisz projekt</button>
         <button type="button" data-pv="gif">🎞️ Zapisz GIF</button>
+        <button type="button" data-pv="jsgame" title="Zapisz animację do zaimportowania w JSGame Engine">🎮 Do JSGame</button>
         <button type="button" data-pv="help">❓ Pomoc</button>
       </nav>
       <button class="pv-close" type="button" data-pv="close" aria-label="Zamknij Web Pivot Animator">×</button>
@@ -224,6 +225,7 @@ function openPivotAnimator() {
           <li>Kliknij <b>Dodaj klatkę</b>. Nowa klatka jest kopią poprzedniej — zmień w niej postać tylko <b>trochę</b>.</li>
           <li>Powtarzaj. Szary cień pokazuje poprzednią klatkę, więc łatwo o płynny ruch.</li>
           <li>Kliknij <b>Odtwórz</b>, a na koniec <b>Zapisz GIF</b>.</li>
+          <li>Chcesz ruszać postacią w grze? Kliknij <b>Do JSGame</b> i zaimportuj plik w JSGame Engine (⤓ Importuj w Przeglądarce zawartości).</li>
         </ol>
         <p>Z <b>Shift</b> kropka wydłuża lub skraca odcinek. <b>Ctrl+Z</b> cofa, <b>←</b> <b>→</b> zmieniają klatkę.</p>
         <button class="primary-button" type="button" data-pv="help-close">Rozumiem</button>
@@ -1259,6 +1261,89 @@ async function exportPivotGif() {
   setPivotStatus(`Gotowe! Zapisano animacja.gif (${sequence.length} klatek).`);
 }
 
+// Eksport do JSGame Engine: arkusz klatek PNG (przezroczyste tło, same postacie, przycięte do
+// obszaru, w którym postacie się poruszają) + fps i zapętlenie. Silnik robi z niego Teksturę,
+// Sprite z każdej klatki i Animację (Flipbook). Puste klatki zostają, żeby nie zmienić tempa.
+const PIVOT_JSGAME_MAX = 2048;
+
+function drawPivotFiguresOnly(ctx, frame) {
+  ctx.clearRect(0, 0, PIVOT_W, PIVOT_H);
+  frame.figures.forEach((fig) => drawPivotFigure(ctx, fig));
+}
+
+function exportPivotJsGame() {
+  if (pivot.busy) return;
+  stopPivotPlayback();
+  const sequence = pivotSequence();
+  const canvas = document.createElement('canvas');
+  canvas.width = PIVOT_W;
+  canvas.height = PIVOT_H;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  // Wspólny prostokąt dla wszystkich klatek — postać nie „skacze” w grze między klatkami.
+  let left = PIVOT_W;
+  let top = PIVOT_H;
+  let right = -1;
+  let bottom = -1;
+  try {
+    sequence.forEach((item) => {
+      drawPivotFiguresOnly(ctx, item.frame);
+      const data = ctx.getImageData(0, 0, PIVOT_W, PIVOT_H).data;
+      for (let y = 0; y < PIVOT_H; y += 1) {
+        for (let x = 0; x < PIVOT_W; x += 1) {
+          if (data[(y * PIVOT_W + x) * 4 + 3] < 8) continue;
+          if (x < left) left = x;
+          if (x > right) right = x;
+          if (y < top) top = y;
+          if (y > bottom) bottom = y;
+        }
+      }
+    });
+  } catch {
+    // Strona otwarta z dysku (file://): przeglądarka nie pozwala odczytać płótna z obrazkami wyglądów.
+    setPivotStatus('Nie da się zapisać animacji z gotowymi wyglądami, gdy strona jest otwarta z pliku. Otwórz ją przez serwer albo użyj własnego wyglądu.');
+    return;
+  }
+  if (right < 0) {
+    setPivotStatus('Animacja jest pusta — dodaj postać, zanim zapiszesz ją do JSGame.');
+    return;
+  }
+  const pad = 2;
+  left = Math.max(0, left - pad);
+  top = Math.max(0, top - pad);
+  const frameW = Math.min(PIVOT_W, right + pad + 1) - left;
+  const frameH = Math.min(PIVOT_H, bottom + pad + 1) - top;
+  // Siatka zbliżona do kwadratu; za duży arkusz zmniejszamy, żeby zmieścił się w projekcie gry.
+  const count = sequence.length;
+  const cols = Math.max(1, Math.min(count, 64, Math.round(Math.sqrt((count * frameH) / frameW))));
+  const rows = Math.ceil(count / cols);
+  const scale = Math.min(1, PIVOT_JSGAME_MAX / (cols * frameW), PIVOT_JSGAME_MAX / (rows * frameH));
+  const cellW = Math.max(1, Math.floor(frameW * scale));
+  const cellH = Math.max(1, Math.floor(frameH * scale));
+  const sheet = document.createElement('canvas');
+  sheet.width = cols * cellW;
+  sheet.height = rows * cellH;
+  const sheetCtx = sheet.getContext('2d');
+  sequence.forEach((item, index) => {
+    drawPivotFiguresOnly(ctx, item.frame);
+    sheetCtx.drawImage(canvas, left, top, frameW, frameH, (index % cols) * cellW, Math.floor(index / cols) * cellH, cellW, cellH);
+  });
+  const data = {
+    format: 'jsgame-animation',
+    version: 1,
+    source: 'Web Pivot Animator',
+    fps: pivot.fps,
+    loop: pivot.loop,
+    frameWidth: cellW,
+    frameHeight: cellH,
+    cols,
+    rows,
+    frames: count,
+    image: sheet.toDataURL('image/png')
+  };
+  downloadPivotBlob(new Blob([JSON.stringify(data)], { type: 'application/json' }), 'animacja.jsgame.json');
+  setPivotStatus(`Zapisano animacja.jsgame.json (${count} klatek, ${cellW}×${cellH} px). W JSGame Engine kliknij ⤓ Importuj albo przeciągnij plik do Przeglądarki zawartości.`);
+}
+
 // Prosty koder GIF89a: stała paleta 6×6×6 kolorów + 40 odcieni szarości i kompresja LZW.
 function createPivotGifEncoder(width, height, delay, loop) {
   const bytes = [];
@@ -1389,6 +1474,7 @@ function handlePivotAction(action) {
     case 'open': pivot.root.querySelector('.pv-file').click(); break;
     case 'save': savePivotFile(); break;
     case 'gif': exportPivotGif(); break;
+    case 'jsgame': exportPivotJsGame(); break;
     case 'help': togglePivotHelp(true); break;
     case 'help-close': togglePivotHelp(false); break;
     case 'frame-left': movePivotFrame(-1); break;
