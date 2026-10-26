@@ -109,18 +109,17 @@ const topics = [
     accent: '#00b8a9',
     dark: '#00978a',
     soft: '#dff8f5',
-    quizzes: { 0: scottieGoTask, 1: frozenTask, 2: hourOfCodeTask, 3: programmingQuiz, 4: codeRobotGame, 5: boardCodeGame, 6: algorithmRobotGame, 8: kosmoKrokiGame },
+    // Kosmo Kroki (8) nie ma własnego węzła — otwiera się z zadania Scottie Go! jako „albo” i zalicza zadanie 4.
+    quizzes: { 0: programmingQuiz, 1: frozenTask, 2: hourOfCodeTask, 3: scottieGoTask, 4: codeRobotGame, 5: boardCodeGame, 6: algorithmRobotGame, 8: kosmoKrokiGame },
     lessons: [
-      'Scottie Go! — pierwszy poziom',
+      'Quiz: Język robotów',
       'Kraina Lodu — zagadki z Elzą',
       'Godzina Kodowania — zagadki',
-      'Quiz: Język robotów',
+      'Scottie Go! — pierwszy poziom albo Gra: Kosmo Kroki',
       'Gra: Kod Robota',
       'Gra: Kod Planszy',
       'Gra: Algorytmy Robota',
-      'Godot — postać chodzi strzałkami',
-      'Gra: Kosmo Kroki',
-      'Szukamy błędów'
+      'Godot — postać chodzi strzałkami'
     ]
   }
 ];
@@ -192,6 +191,32 @@ function migrateLegacyStudentData() {
       }
       localStorage.removeItem(baseKey);
     });
+  } catch {
+    // The page still works when browser storage is unavailable.
+  }
+}
+
+// Ścieżka „Programowanie” dostała nową kolejność zadań — przenosi zapisane fajki na nowe numery.
+// Stary numer → nowy (Kosmo Kroki liczy się jako Scottie Go!, „Szukamy błędów” odpada).
+function migrateProgrammingOrder() {
+  const markerKey = 'informatyczna-przygoda:programowanie-order:2';
+  const oldToNew = [3, 1, 2, 0, 4, 5, 6, 7, 3];
+  try {
+    if (localStorage.getItem(markerKey)) return;
+    Object.keys(localStorage)
+      .filter((key) => key.startsWith(`${progressKey}:`))
+      .forEach((key) => {
+        const progress = readStoredObject(key);
+        const stored = progress.programowanie;
+        if (stored === undefined) return;
+        const indexes = Array.isArray(stored)
+          ? stored
+          : Array.from({ length: Math.max(Math.floor(Number(stored)) || 0, 0) }, (_, i) => i);
+        const moved = new Set(indexes.map((i) => oldToNew[i]).filter((i) => i !== undefined));
+        progress.programowanie = [...moved].sort((a, b) => a - b);
+        localStorage.setItem(key, JSON.stringify(progress));
+      });
+    localStorage.setItem(markerKey, '1');
   } catch {
     // The page still works when browser storage is unavailable.
   }
@@ -1719,5 +1744,6 @@ welcomeDialog.addEventListener('cancel', (event) => {
 
 window.addEventListener('hashchange', route);
 migrateLegacyStudentData();
+migrateProgrammingOrder();
 route();
 if (!readStudentName()) openWelcomeDialog();

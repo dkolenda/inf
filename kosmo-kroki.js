@@ -167,7 +167,7 @@ function kkParse(text = '') {
 }
 
 // Mapa: K Kosmo (N niebieski, P różowy), D Robo, S Kosmo na rakiecie, R rakieta, C kryształ, E bateria, B skrzynia,
-// o krater, # skała, ~ śluz, . grunt.
+// o krater, # skała, ~ śluz, . grunt, ? kryształ albo grunt — za każdym razem inaczej (random).
 // Poziom z meteors: tyle meteorytów spada na losowe pola gruntu — za każdym razem gdzie indziej (random).
 function kkCreateWorld(level, random = Math.random) {
   const world = {
@@ -198,7 +198,7 @@ function kkCreateWorld(level, random = Math.random) {
     const who = KK_CHAR_TILES[tile];
     if (who) world.chars.push(char(who, x, y, level.dirs?.[who] || (who === 'robo' && level.roboDir) || dir));
     if (tile === 'R' || tile === 'S') world.rocket = { x, y };
-    if (tile === 'C') world.crystals.add(`${x},${y}`);
+    if (tile === 'C' || (tile === '?' && random() < 0.5)) world.crystals.add(`${x},${y}`);
     if (tile === 'B') world.boxes.add(`${x},${y}`);
     if (tile === 'E') world.batteries.add(`${x},${y}`);
     if (tile === '.') ground.push(`${x},${y}`);
@@ -648,6 +648,15 @@ function kkRun(level, program, random = Math.random) {
   return { world, error, won: !error && kkGoalReached(world) };
 }
 
+// Pola ? dają wiele układów kryształów. Program jest dobry, gdy przechodzi każdy z nich, a nie tylko ten na ekranie.
+function kkWorksEverywhere(level, program) {
+  const count = level.map.join('').split('?').length - 1;
+  return Array.from({ length: 2 ** count }, (_, mask) => {
+    let i = 0;
+    return kkRun(level, program, () => ((mask >> i++) & 1 ? 0 : 0.99)).won;
+  }).every(Boolean);
+}
+
 function kkStars(level, count) {
   return count <= level.stars[0] ? 3 : count <= level.stars[1] ? 2 : 1;
 }
@@ -912,6 +921,28 @@ function kkPaletteCompact(value) {
   return Boolean(value);
 }
 
+// Szerokość okna z programem (px) ustawiona przeciągnięciem krawędzi. Bez zapisu — szerokość domyślna.
+function kkCodeWidth(value) {
+  const key = `${KK_STORAGE_KEY}:code-width`;
+  try {
+    if (value === undefined) return Number(localStorage.getItem(key)) || 0;
+    if (value) localStorage.setItem(key, String(value));
+    else localStorage.removeItem(key);
+  } catch {}
+  return value || 0;
+}
+
+// Wysokość okna z programem (px) ustawiona przeciągnięciem dolnej krawędzi. Bez zapisu — dopasowana do okna przeglądarki.
+function kkCodeHeight(value) {
+  const key = `${KK_STORAGE_KEY}:code-height`;
+  try {
+    if (value === undefined) return Number(localStorage.getItem(key)) || 0;
+    if (value) localStorage.setItem(key, String(value));
+    else localStorage.removeItem(key);
+  } catch {}
+  return value || 0;
+}
+
 // Zwinięty pasek celów pokazuje tylko ikony i skrót celu. Wybór zapamiętuje przeglądarka.
 function kkGoalsCompact(value) {
   const key = `${KK_STORAGE_KEY}:goals-compact`;
@@ -945,11 +976,7 @@ function renderKosmoGame(topic, index, game) {
   body.addEventListener('error', kkArtFallback, true);
   body.innerHTML = `
     ${kkArt('cover', 'kk-cover')}
-    <div class="bg-legend">
-      ${[['kosmo', 'Kosmo', 'wykonuje Twoje karty'], ['crystal', 'Kryształ', 'zbierz go kartą Podnieś'], ['rocket', 'Rakieta', 'tu kończy się droga'], ['rock', 'Skała', 'przez nią nie przejdziesz'], ['crater', 'Krater', 'przeskocz go albo zasyp skrzynią'], ['box', 'Skrzynia', 'przesuń ją kartą Przesuń'], ['robo', 'Robo', 'jeździ po śluzie, ale nie skacze'], ['battery', 'Bateria', 'podnieś, podaj albo rzuć — do rakiety'], ['meteor', 'Meteoryt', 'spada nagle — zrób unik']]
-        .map(([art, name, text]) => `
-          <span class="bg-legend-item"><span class="kk-legend-icon" aria-hidden="true">${kkArt(art)}</span><span><b>${name}</b>${text}</span></span>`).join('')}
-    </div>
+    <button class="primary-button fg-start" type="button">${firstOpen > 0 ? 'Graj dalej' : 'Start'} <span aria-hidden="true">▶</span></button>
     <p class="ng-legend-title cg-levels-title">Poziomy</p>
     <div class="cg-level-grid">
       ${game.levels.map((level, i) => {
@@ -962,7 +989,6 @@ function renderKosmoGame(topic, index, game) {
           </button>`;
       }).join('')}
     </div>
-    <button class="primary-button fg-start" type="button">${firstOpen > 0 ? 'Graj dalej' : 'Start'} <span aria-hidden="true">▶</span></button>
   `;
   body.querySelector('.fg-start').addEventListener('click', () => startKosmoLevel(topic, index, game, startAt));
   body.querySelectorAll('.cg-level-pick').forEach((button) => {
@@ -1012,7 +1038,9 @@ function startKosmoLevel(topic, index, game, levelIndex, seed = Math.floor(Math.
       </aside>
       <section class="kk-side kk-code" aria-label="Program z kart">
         <div class="kk-program"></div>
+        <div class="kk-code-resize" role="separator" aria-orientation="vertical" aria-label="Zmień szerokość okna programu" tabindex="0" title="Przeciągnij, aby zmienić szerokość (dwuklik — domyślna)"></div>
         ${level.hint ? `<details class="cg-hint"><summary>Podpowiedź</summary><p>${level.hint}</p></details>` : ''}
+        <div class="kk-code-grow" role="separator" aria-orientation="horizontal" aria-label="Zmień wysokość okna programu" tabindex="0" title="Przeciągnij, aby zmienić wysokość (dwuklik — domyślna)"></div>
       </section>
       <section class="kk-side" aria-label="Plansza">
         ${level.concept ? `
@@ -1023,7 +1051,7 @@ function startKosmoLevel(topic, index, game, levelIndex, seed = Math.floor(Math.
         <div class="kk-board" style="--cols: ${world.cols}; --rows: ${world.rows}; --kk-ground: url('${KK_ART.ground}')">
           <div class="kk-cells">
             ${level.map.map((row, y) => [...row].map((tile, x) => `
-              <span class="kk-cell${tile === '#' ? ' is-rock' : tile === '~' ? ' is-slime' : tile === 'o' ? ' is-crater' : ''}" data-key="${x},${y}">${tile === '#' ? kkArt('rock') : tile === '~' ? kkArt('slime') : ''}</span>`).join('')).join('')}
+              <span class="kk-cell${tile === '#' ? ' is-rock' : tile === '~' ? ' is-slime' : tile === 'o' ? ' is-crater' : tile === '?' ? ' is-maybe' : ''}" data-key="${x},${y}">${tile === '#' ? kkArt('rock') : tile === '~' ? kkArt('slime') : ''}</span>`).join('')).join('')}
           </div>
           <div class="kk-items"></div>
         </div>
@@ -1083,6 +1111,9 @@ function startKosmoLevel(topic, index, game, levelIndex, seed = Math.floor(Math.
     syncPaletteToggle();
   });
 
+  kkBindCodeResize(layout);
+  kkBindCodeGrow(state);
+
   const goalsBar = body.querySelector('.kk-goals');
   const goalsToggle = body.querySelector('.kk-goals-toggle');
   const syncGoalsToggle = () => {
@@ -1128,6 +1159,100 @@ function startKosmoLevel(topic, index, game, levelIndex, seed = Math.floor(Math.
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 
+// Okno programu poszerza się, gdy ciągniesz za jego prawą krawędź. Plansza dostaje resztę miejsca.
+const KK_CODE_MIN_W = 240;
+const KK_BOARD_MIN_W = 300;
+
+function kkBindCodeResize(layout) {
+  const column = layout.querySelector('.kk-code');
+  const handle = layout.querySelector('.kk-code-resize');
+  const apply = (width) => {
+    if (width) layout.style.setProperty('--kk-code-w', `minmax(${KK_CODE_MIN_W}px, ${width}px)`);
+    else layout.style.removeProperty('--kk-code-w');
+  };
+  const clamp = (width) => {
+    const palette = layout.querySelector('.kk-palette').offsetWidth;
+    const gaps = 2 * parseFloat(getComputedStyle(layout).columnGap || 0);
+    const max = layout.clientWidth - palette - gaps - KK_BOARD_MIN_W;
+    return Math.round(Math.max(KK_CODE_MIN_W, Math.min(max, width)));
+  };
+  apply(kkCodeWidth());
+
+  handle.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    const startX = event.clientX;
+    const startW = column.getBoundingClientRect().width;
+    let width = startW;
+    handle.setPointerCapture(event.pointerId);
+    layout.classList.add('is-resizing');
+    const move = (e) => apply((width = clamp(startW + e.clientX - startX)));
+    const up = () => {
+      handle.removeEventListener('pointermove', move);
+      handle.removeEventListener('pointerup', up);
+      handle.removeEventListener('pointercancel', up);
+      layout.classList.remove('is-resizing');
+      kkCodeWidth(width);
+    };
+    handle.addEventListener('pointermove', move);
+    handle.addEventListener('pointerup', up);
+    handle.addEventListener('pointercancel', up);
+  });
+  handle.addEventListener('dblclick', () => {
+    kkCodeWidth(0);
+    apply(0);
+  });
+  handle.addEventListener('keydown', (event) => {
+    const step = { ArrowLeft: -20, ArrowRight: 20 }[event.key];
+    if (!step) return;
+    event.preventDefault();
+    const width = clamp(column.getBoundingClientRect().width + step);
+    apply(width);
+    kkCodeWidth(width);
+  });
+}
+
+// Okno programu wydłuża się (jak pole tekstowe), gdy ciągniesz za jego dolną krawędź.
+const KK_CODE_MIN_H = 320;
+
+function kkBindCodeGrow(state) {
+  const column = state.body.querySelector('.kk-code');
+  const handle = column.querySelector('.kk-code-grow');
+  const apply = (height) => {
+    kkCodeHeight(height);
+    kkFitProgram(state);
+  };
+  const clamp = (height) => Math.round(Math.max(KK_CODE_MIN_H, height));
+
+  handle.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    const startY = event.clientY;
+    const startH = column.getBoundingClientRect().height;
+    let height = startH;
+    handle.setPointerCapture(event.pointerId);
+    column.classList.add('is-growing');
+    const move = (e) => column.style.setProperty('--kk-code-h', `${(height = clamp(startH + e.clientY - startY))}px`);
+    const up = () => {
+      handle.removeEventListener('pointermove', move);
+      handle.removeEventListener('pointerup', up);
+      handle.removeEventListener('pointercancel', up);
+      column.classList.remove('is-growing');
+      apply(height);
+    };
+    handle.addEventListener('pointermove', move);
+    handle.addEventListener('pointerup', up);
+    handle.addEventListener('pointercancel', up);
+  });
+  handle.addEventListener('dblclick', () => apply(0));
+  handle.addEventListener('keydown', (event) => {
+    const step = { ArrowUp: -20, ArrowDown: 20 }[event.key];
+    if (!step) return;
+    event.preventDefault();
+    apply(clamp(column.getBoundingClientRect().height + step));
+  });
+}
+
 function kkGoToLevel(state, levelIndex) {
   if (levelIndex < 0 || levelIndex >= state.game.levels.length) return;
   kkStopRun(state);
@@ -1141,7 +1266,7 @@ function kkFitProgram(state) {
     return Math.round(Math.min(window.innerHeight - 24, Math.max(320, window.innerHeight - top - 16)));
   };
   const column = state.body.querySelector('.kk-code');
-  column.style.setProperty('--kk-code-h', `${fit(column)}px`);
+  column.style.setProperty('--kk-code-h', `${kkCodeHeight() || fit(column)}px`);
   const palette = state.body.querySelector('.kk-palette');
   palette.style.setProperty('--kk-palette-h', `${fit(palette)}px`);
 }
@@ -1156,6 +1281,8 @@ function stopKosmoGame() {
   clearTimeout(kosmoGame.timer);
   clearTimeout(kosmoGame.messageTimer);
   kosmoGame.flyer?.remove();
+  kkDragListeners?.abort();
+  kkDragListeners = null;
   kosmoGame = null;
 }
 
@@ -1388,21 +1515,35 @@ function kkInsertDigit(state, host, index, digit) {
 const KK_DRAG_START = 6;
 const KK_SCROLL_EDGE = 40;
 
+// #quiz-body zostaje ten sam przez całą grę, a poziom startuje wiele razy — stare nasłuchy trzeba zdjąć,
+// inaczej każdy poprzedni poziom przeciągałby kartę jeszcze raz (dziesiątki podglądów naraz).
+let kkDragListeners = null;
+
 function kkBindDrag(state) {
-  state.body.addEventListener('pointerdown', (event) => kkDragDown(state, event));
+  kkDragListeners?.abort();
+  kkDragListeners = new AbortController();
+  const { signal } = kkDragListeners;
+  state.body.addEventListener('pointerdown', (event) => kkDragDown(state, event), { signal });
+  // Zaznaczony tekst (np. po dwukliku) przeglądarka przeciąga sama — wszystkie zaznaczone karty naraz, półprzezroczyste.
+  // Blokujemy to, żeby zawsze działało nasze przeciąganie jednej karty.
+  state.body.addEventListener('dragstart', (event) => {
+    if (!event.target.closest?.('input, textarea')) event.preventDefault();
+  }, { signal });
   // Po upuszczeniu przeglądarka wysyła jeszcze click — nie może on dołożyć karty ani przesunąć kursora.
   state.body.addEventListener('click', (event) => {
     if (!state.dragEnded) return;
     state.dragEnded = false;
     event.stopPropagation();
     event.preventDefault();
-  }, true);
+  }, { capture: true, signal });
 }
 
 function kkDragDown(state, event) {
   if (state.running || event.button !== 0) return;
   const pick = event.target.closest('.kk-pick');
-  const face = event.target.closest('.kk-card-face');
+  // Ramka Powtórz / Jeśli / Gdy (poza jej środkiem) łapie całą kartę razem z kartami w środku — jak jej nagłówek.
+  const frame = event.target.closest('.kk-list, .kk-loop');
+  const face = event.target.closest('.kk-card-face') || (frame?.matches('.kk-loop') ? frame.querySelector(':scope > .kk-card > .kk-card-face') : null);
   const digit = event.target.closest('.kk-digit[data-i]');
   const item = event.target.closest('.kk-cond[data-cond]');
   if (pick?.disabled || face?.closest('.kk-start') || (!pick && !face && !digit && !item)) return;
@@ -1415,6 +1556,7 @@ function kkDragDown(state, event) {
     source.list = source.el.dataset.list;
     source.item = source.el.parentElement.matches('.kk-loop') ? source.el.parentElement : source.el;
   }
+  window.getSelection()?.removeAllRanges();
   const start = { x: event.clientX, y: event.clientY };
   let drag = null;
   const move = (e) => {
@@ -1506,7 +1648,8 @@ function kkDragMove(state, drag, event) {
     ? kkCallsIn(kkFindList(state, drag.source.list).list.filter((node) => node.id === drag.source.id))
     : new Set(drag.source.card === 'call' ? [drag.source.fn] : []);
   // Nie wolno włożyć Powtórz do niej samej ani zrobić kółka wywołań funkcji.
-  if (!target || drag.source.item?.contains(listEl) || [...calls].some((fn) => !kkCanCall(state.program, target.inFunc, fn, state.level.recursion))) {
+  // Nad samą przenoszoną kartą (np. ramką Powtórz) karta zostaje na swoim miejscu.
+  if (!target || drag.source.item?.contains(under) || drag.source.item?.contains(listEl) || [...calls].some((fn) => !kkCanCall(state.program, target.inFunc, fn, state.level.recursion))) {
     drag.target = null;
     drag.marker.remove();
     drag.source.item?.classList.remove('is-moved');
@@ -2082,7 +2225,8 @@ function kkStartRun(state) {
     kkSetStatus(state, 'Program jest pusty. Kliknij karty na belce po lewej, by go ułożyć.', 'bad');
     return;
   }
-  if (state.dirty) kkResetBoard(state);
+  // Pola ? losują kryształy dopiero w chwili startu — program nie może liczyć na układ widziany wcześniej.
+  if (state.dirty || state.level.map.some((row) => row.includes('?'))) kkResetBoard(state);
   state.running = true;
   state.dirty = true;
   state.steps = kkExecute(state.program, state.level, state.world);
@@ -2163,6 +2307,10 @@ function kkStopRun(state, message) {
 function kkFinishRun(state) {
   if (!kkGoalReached(state.world)) {
     kkSetStatus(state, kkGoalMessage(state.world), 'bad');
+    return;
+  }
+  if (!kkWorksEverywhere(state.level, state.program)) {
+    kkSetStatus(state, 'Udało się, ale tylko na tej planszy! Na polach ze znakiem zapytania kryształ raz jest, a raz go nie ma. Niech Kosmo sam sprawdza kartą Jeśli, czy stoi na krysztale.', 'bad');
     return;
   }
   winKosmoLevel(state);
@@ -2263,7 +2411,7 @@ function finishKosmoGame(state) {
     saveQuizBest(game.id, points);
     saveStudentPoints(readStudentPoints() + earned);
   }
-  completeLesson(topic, index);
+  completeLesson(topic, game.lesson ?? index);
 
   setQuizProgress(1);
   app.querySelector('#quiz-prompt').textContent = 'Brawo, Kosmo leci do domu!';
